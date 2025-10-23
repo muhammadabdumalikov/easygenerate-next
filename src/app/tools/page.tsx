@@ -1,320 +1,395 @@
+'use client';
+
+import { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
 import { 
-  Image, 
   FileText, 
   Code, 
+  Image, 
   Video, 
-  Music, 
-  Archive,
-  Type,
-  Database,
-  Layout,
+  Music,
   ArrowRight,
-  Grid
+  ChevronDown,
+  ChevronUp,
+  Grid,
+  Search
 } from 'react-feather';
 
-// Converter tool configuration
-interface ConverterTool {
+// Tool definition interface
+interface Tool {
   id: string;
   name: string;
+  to: string;
+  description: string;
+  badge?: string;
+  href: string;
+}
+
+// Tool group definition
+interface ToolGroup {
+  id: string;
+  source: string;
   description: string;
   icon: React.ComponentType<{ className?: string }>;
   iconColor: string;
   iconBg: string;
-  category: string;
-  badge?: string;
-  href: string;
-  popular?: boolean;
+  tools: Tool[];
 }
 
-const converterTools: ConverterTool[] = [
+// Grouped tools by source file type
+const toolGroups: ToolGroup[] = [
   {
-    id: 'universal-converter',
-    name: 'Universal File Converter',
-    description: 'Convert any file to any format. Batch processing, 300+ formats supported',
+    id: 'universal',
+    source: 'Universal',
+    description: 'Convert any file to any format',
     icon: Grid,
     iconColor: 'text-indigo-600',
     iconBg: 'bg-indigo-100',
-    category: 'All',
-    badge: 'Popular',
-    href: '/tools/universal-converter',
-    popular: true
+    tools: [
+      {
+        id: 'universal-converter',
+        name: 'Universal',
+        to: 'Any Format',
+        description: 'Batch convert files between 300+ formats',
+        badge: 'Popular',
+        href: '/tools/universal-converter'
+      }
+    ]
   },
   {
-    id: 'image-to-pdf',
-    name: 'Image to PDF',
-    description: 'Convert JPG, PNG, GIF images to PDF documents with custom settings',
-    icon: Image,
-    iconColor: 'text-blue-600',
-    iconBg: 'bg-blue-100',
-    category: 'Image',
-    badge: 'Popular',
-    href: '/tools/image-to-pdf',
-    popular: true
+    id: 'csv',
+    source: 'CSV',
+    description: 'Convert CSV files to other formats',
+    icon: FileText,
+    iconColor: 'text-green-600',
+    iconBg: 'bg-green-100',
+    tools: [
+      {
+        id: 'csv-to-excel',
+        name: 'CSV',
+        to: 'Excel',
+        description: 'Create Excel spreadsheets (.xlsx) with formatting',
+        badge: 'New',
+        href: '/tools/csv-to-excel'
+      },
+      {
+        id: 'csv-to-json',
+        name: 'CSV',
+        to: 'JSON',
+        description: 'Transform CSV data into JSON format',
+        badge: 'Popular',
+        href: '/tools/csv-to-json'
+      }
+    ]
   },
   {
-    id: 'csv-to-json',
-    name: 'CSV to JSON',
-    description: 'Transform CSV data into JSON format with flexible options',
+    id: 'json',
+    source: 'JSON',
+    description: 'JSON formatting and conversion tools',
     icon: Code,
     iconColor: 'text-purple-600',
     iconBg: 'bg-purple-100',
-    category: 'Data',
-    badge: 'Free',
-    href: '/tools/csv-to-json',
-    popular: true
+    tools: [
+      {
+        id: 'json-formatter',
+        name: 'JSON',
+        to: 'Formatter',
+        description: 'Beautify, minify, and validate JSON data',
+        href: '/tools/json-formatter'
+      }
+    ]
   },
   {
-    id: 'csv-to-excel',
-    name: 'CSV to Excel',
-    description: 'Convert CSV files to Excel spreadsheets (.xlsx) with formatting',
-    icon: Database,
-    iconColor: 'text-green-600',
-    iconBg: 'bg-green-100',
-    category: 'Data',
-    badge: 'New',
-    href: '/tools/csv-to-excel',
-    popular: true
-  },
-  {
-    id: 'pdf-to-word',
-    name: 'PDF to Word',
-    description: 'Convert PDF documents to editable Word files',
+    id: 'pdf',
+    source: 'PDF',
+    description: 'PDF conversion and manipulation tools',
     icon: FileText,
     iconColor: 'text-red-600',
     iconBg: 'bg-red-100',
-    category: 'Document',
-    href: '/tools/pdf-to-word'
+    tools: [
+      {
+        id: 'pdf-to-word',
+        name: 'PDF',
+        to: 'Word',
+        description: 'Convert PDF to editable Word documents',
+        href: '/tools/pdf-to-word'
+      },
+      {
+        id: 'pdf-to-image',
+        name: 'PDF',
+        to: 'Image',
+        description: 'Extract images or convert PDF pages to images',
+        href: '/tools/pdf-to-image'
+      }
+    ]
   },
   {
-    id: 'video-compressor',
-    name: 'Video Compressor',
-    description: 'Reduce video file size while maintaining quality',
+    id: 'image',
+    source: 'Image',
+    description: 'Image conversion and optimization tools',
+    icon: Image,
+    iconColor: 'text-blue-600',
+    iconBg: 'bg-blue-100',
+    tools: [
+      {
+        id: 'image-to-pdf',
+        name: 'Image',
+        to: 'PDF',
+        description: 'Combine multiple images into PDF documents',
+        badge: 'Popular',
+        href: '/tools/image-to-pdf'
+      },
+      {
+        id: 'image-compressor',
+        name: 'Image',
+        to: 'Compressed',
+        description: 'Reduce image file size without quality loss',
+        href: '/tools/image-compressor'
+      }
+    ]
+  },
+  {
+    id: 'video',
+    source: 'Video',
+    description: 'Video conversion and compression tools',
     icon: Video,
     iconColor: 'text-orange-600',
     iconBg: 'bg-orange-100',
-    category: 'Video',
-    href: '/tools/video-compressor'
+    tools: [
+      {
+        id: 'video-compressor',
+        name: 'Video',
+        to: 'Compressed',
+        description: 'Reduce video file size while maintaining quality',
+        href: '/tools/video-compressor'
+      },
+      {
+        id: 'video-to-gif',
+        name: 'Video',
+        to: 'GIF',
+        description: 'Convert video clips to animated GIFs',
+        href: '/tools/video-to-gif'
+      }
+    ]
   },
   {
-    id: 'audio-converter',
-    name: 'Audio Converter',
-    description: 'Convert between MP3, WAV, FLAC, and other audio formats',
+    id: 'audio',
+    source: 'Audio',
+    description: 'Audio conversion and editing tools',
     icon: Music,
-    iconColor: 'text-green-600',
-    iconBg: 'bg-green-100',
-    category: 'Audio',
-    href: '/tools/audio-converter'
-  },
-  {
-    id: 'json-formatter',
-    name: 'JSON Formatter',
-    description: 'Beautify and validate JSON data with syntax highlighting',
-    icon: Database,
-    iconColor: 'text-indigo-600',
-    iconBg: 'bg-indigo-100',
-    category: 'Data',
-    badge: 'New',
-    href: '/tools/json-formatter'
-  },
-  {
-    id: 'markdown-to-html',
-    name: 'Markdown to HTML',
-    description: 'Convert Markdown documents to HTML with preview',
-    icon: Type,
-    iconColor: 'text-teal-600',
-    iconBg: 'bg-teal-100',
-    category: 'Document',
-    href: '/tools/markdown-to-html'
-  },
-  {
-    id: 'file-merger',
-    name: 'File Merger',
-    description: 'Combine multiple files into a single document',
-    icon: Archive,
-    iconColor: 'text-yellow-600',
-    iconBg: 'bg-yellow-100',
-    category: 'Utility',
-    href: '/tools/file-merger'
-  },
-  {
-    id: 'qr-generator',
-    name: 'QR Code Generator',
-    description: 'Create customizable QR codes for URLs, text, and more',
-    icon: Layout,
     iconColor: 'text-pink-600',
     iconBg: 'bg-pink-100',
-    category: 'Utility',
-    badge: 'Popular',
-    href: '/tools/qr-generator',
-    popular: true
+    tools: [
+      {
+        id: 'audio-converter',
+        name: 'Audio',
+        to: 'Any Format',
+        description: 'Convert between MP3, WAV, FLAC, and more',
+        href: '/tools/audio-converter'
+      }
+    ]
   }
 ];
 
-const categories = ['All', 'Image', 'Document', 'Data', 'Video', 'Audio', 'Utility'];
-
 export default function ToolsPage() {
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(['universal', 'csv']);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const toggleGroup = (groupId: string) => {
+    if (expandedGroups.includes(groupId)) {
+      setExpandedGroups(expandedGroups.filter(id => id !== groupId));
+    } else {
+      setExpandedGroups([...expandedGroups, groupId]);
+    }
+  };
+
+  const expandAll = () => {
+    setExpandedGroups(toolGroups.map(g => g.id));
+  };
+
+  const collapseAll = () => {
+    setExpandedGroups([]);
+  };
+
+  // Filter tools based on search
+  const filteredGroups = toolGroups.map(group => ({
+    ...group,
+    tools: group.tools.filter(tool =>
+      tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      tool.to.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      tool.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      group.source.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  })).filter(group => group.tools.length > 0);
+
   return (
     <div className="min-h-screen bg-[#f5f3ef]">
       <Header />
 
-      {/* Hero Section */}
-      <section className="px-8 py-12 max-w-6xl mx-auto">
+      <main className="px-8 py-12 max-w-7xl mx-auto">
+        {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Converter Tools
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            All Converter Tools
           </h1>
-          <p className="text-gray-600 text-lg max-w-3xl mx-auto leading-relaxed">
-            Professional conversion tools for all your needs. Fast, secure, and easy to use. 
-            No registration required.
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            Browse our complete collection of conversion tools, organized by source file type for easy discovery.
           </p>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-          <div className="bg-white rounded-xl p-6 text-center border border-gray-100 shadow-sm">
-            <p className="text-3xl font-bold text-indigo-600 mb-1">50+</p>
-            <p className="text-sm text-gray-600">Tools Available</p>
-          </div>
-          <div className="bg-white rounded-xl p-6 text-center border border-gray-100 shadow-sm">
-            <p className="text-3xl font-bold text-purple-600 mb-1">300+</p>
-            <p className="text-sm text-gray-600">File Formats</p>
-          </div>
-          <div className="bg-white rounded-xl p-6 text-center border border-gray-100 shadow-sm">
-            <p className="text-3xl font-bold text-green-600 mb-1">10M+</p>
-            <p className="text-sm text-gray-600">Conversions</p>
-          </div>
-          <div className="bg-white rounded-xl p-6 text-center border border-gray-100 shadow-sm">
-            <p className="text-3xl font-bold text-orange-600 mb-1">Free</p>
-            <p className="text-sm text-gray-600">No Limits</p>
+        {/* Search Bar */}
+        <div className="max-w-2xl mx-auto mb-8">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search tools... (e.g., CSV, PDF, Image)"
+              className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 text-base text-gray-900 bg-white shadow-md hover:shadow-lg transition-all placeholder:text-gray-400"
+            />
           </div>
         </div>
 
-        {/* Category Filter */}
-        <div className="flex flex-wrap gap-2 justify-center mb-10">
-          {categories.map((category) => (
-            <button
-              key={category}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                category === 'All'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'bg-white text-gray-700 border border-gray-200 hover:border-indigo-300 hover:shadow-sm'
-              }`}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
-
-        {/* Popular Tools Section */}
-        <div className="mb-12">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="w-1 h-6 bg-gradient-to-b from-indigo-500 to-purple-600 rounded-full"></div>
-            <h2 className="text-2xl font-bold text-gray-900">Popular Tools</h2>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {converterTools.filter(tool => tool.popular).map((tool) => {
-              const IconComponent = tool.icon;
-              return (
-                <Link
-                  key={tool.id}
-                  href={tool.href}
-                  className="group bg-white rounded-2xl p-6 border-2 border-gray-100 hover:border-indigo-300 hover:shadow-xl transition-all duration-300"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`w-12 h-12 ${tool.iconBg} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                      <IconComponent className={`w-6 h-6 ${tool.iconColor}`} />
-                    </div>
-                    {tool.badge && (
-                      <span className="px-2.5 py-1 bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-full">
-                        {tool.badge}
-                      </span>
-                    )}
-                  </div>
-                  
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors">
-                    {tool.name}
-                  </h3>
-                  
-                  <p className="text-sm text-gray-600 mb-4">
-                    {tool.description}
-                  </p>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                      {tool.category}
-                    </span>
-                    <ArrowRight className="w-4 h-4 text-indigo-600 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* All Tools Grid */}
-        <div className="mb-12">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-pink-600 rounded-full"></div>
-            <h2 className="text-2xl font-bold text-gray-900">All Tools</h2>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {converterTools.map((tool) => {
-              const IconComponent = tool.icon;
-              return (
-                <Link
-                  key={tool.id}
-                  href={tool.href}
-                  className="group bg-white rounded-xl p-5 border border-gray-100 hover:border-indigo-300 hover:shadow-lg transition-all"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className={`w-10 h-10 ${tool.iconBg} rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
-                      <IconComponent className={`w-5 h-5 ${tool.iconColor}`} />
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-base font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors truncate">
-                          {tool.name}
-                        </h3>
-                        {tool.badge && (
-                          <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs font-semibold rounded flex-shrink-0">
-                            {tool.badge}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs text-gray-600 line-clamp-2">
-                        {tool.description}
-                      </p>
-                    </div>
-                    
-                    <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all flex-shrink-0 mt-1" />
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* CTA Section */}
-        <div className="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-2xl p-10 text-center text-white">
-          <h2 className="text-3xl font-bold mb-4">Need a Custom Converter?</h2>
-          <p className="text-indigo-100 mb-6 max-w-2xl mx-auto">
-            Can&apos;t find the tool you need? Let us know and we&apos;ll build it for you. 
-            We&apos;re constantly adding new converters based on user requests.
-          </p>
-          <button className="bg-white text-indigo-600 px-8 py-3 rounded-xl font-semibold hover:shadow-xl transition-all">
-            Request a Tool
+        {/* Controls */}
+        <div className="flex justify-end gap-2 mb-6">
+          <button
+            onClick={expandAll}
+            className="px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors"
+          >
+            Expand All
+          </button>
+          <button
+            onClick={collapseAll}
+            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            Collapse All
           </button>
         </div>
-      </section>
+
+        {/* Tool Groups */}
+        <div className="space-y-4">
+          {filteredGroups.map((group) => {
+            const IconComponent = group.icon;
+            const isExpanded = expandedGroups.includes(group.id);
+            
+            return (
+              <div
+                key={group.id}
+                className="bg-white rounded-2xl border-2 border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden"
+              >
+                {/* Group Header */}
+                <button
+                  onClick={() => toggleGroup(group.id)}
+                  className="w-full px-6 py-5 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-14 h-14 ${group.iconBg} rounded-xl flex items-center justify-center`}>
+                      <IconComponent className={`w-7 h-7 ${group.iconColor}`} />
+                    </div>
+                    <div className="text-left">
+                      <h2 className="text-xl font-bold text-gray-900 mb-1">
+                        {group.source} Tools
+                        <span className="ml-3 text-sm font-normal text-gray-500">
+                          ({group.tools.length} {group.tools.length === 1 ? 'tool' : 'tools'})
+                        </span>
+                      </h2>
+                      <p className="text-sm text-gray-600">{group.description}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {isExpanded ? (
+                      <ChevronUp className="w-6 h-6 text-gray-400" />
+                    ) : (
+                      <ChevronDown className="w-6 h-6 text-gray-400" />
+                    )}
+                  </div>
+                </button>
+
+                {/* Tools List */}
+                {isExpanded && (
+                  <div className="px-6 pb-6 pt-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {group.tools.map((tool) => (
+                        <Link
+                          key={tool.id}
+                          href={tool.href}
+                          className="group p-4 border-2 border-gray-100 rounded-xl hover:border-indigo-300 hover:bg-indigo-50/50 transition-all"
+                        >
+                          <div className="flex flex-col gap-2">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-base font-bold text-gray-900 group-hover:text-indigo-600 transition-colors whitespace-nowrap">
+                                  {tool.name}
+                                </span>
+                                <ArrowRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-indigo-600 transition-colors flex-shrink-0" />
+                                <span className="text-base font-bold text-indigo-600 whitespace-nowrap">
+                                  {tool.to}
+                                </span>
+                              </div>
+                              {tool.badge && (
+                                <span className={`px-2 py-0.5 text-xs font-semibold rounded-full flex-shrink-0 ${
+                                  tool.badge === 'Popular' 
+                                    ? 'bg-orange-100 text-orange-700'
+                                    : tool.badge === 'New'
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-gray-100 text-gray-700'
+                                }`}>
+                                  {tool.badge}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600 group-hover:text-gray-700 leading-snug">
+                              {tool.description}
+                            </p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* No Results */}
+        {filteredGroups.length === 0 && (
+          <div className="text-center py-16">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Search className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No tools found</h3>
+            <p className="text-gray-600">Try a different search term</p>
+          </div>
+        )}
+
+        {/* Stats */}
+        <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-white rounded-xl p-6 text-center border border-gray-100 shadow-sm">
+            <p className="text-3xl font-bold text-indigo-600 mb-1">
+              {toolGroups.reduce((acc, group) => acc + group.tools.length, 0)}
+            </p>
+            <p className="text-sm text-gray-600">Total Tools</p>
+          </div>
+          <div className="bg-white rounded-xl p-6 text-center border border-gray-100 shadow-sm">
+            <p className="text-3xl font-bold text-purple-600 mb-1">{toolGroups.length}</p>
+            <p className="text-sm text-gray-600">File Types</p>
+          </div>
+          <div className="bg-white rounded-xl p-6 text-center border border-gray-100 shadow-sm">
+            <p className="text-3xl font-bold text-green-600 mb-1">Free</p>
+            <p className="text-sm text-gray-600">No Limits</p>
+          </div>
+          <div className="bg-white rounded-xl p-6 text-center border border-gray-100 shadow-sm">
+            <p className="text-3xl font-bold text-orange-600 mb-1">Fast</p>
+            <p className="text-sm text-gray-600">Instant Convert</p>
+          </div>
+        </div>
+      </main>
 
       <Footer />
     </div>
   );
 }
-

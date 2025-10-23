@@ -399,7 +399,7 @@ Coffee Maker,Appliances,89.99,56`;
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">File Ready for Conversion</h3>
                     <p className="text-sm text-gray-600 mb-4">
                       Your CSV file has been loaded successfully.<br />
-                      Click "Convert to Excel" to generate your spreadsheet.
+                      Click &quot;Convert to Excel&quot; to generate your spreadsheet.
                     </p>
                     <div className="bg-white rounded-lg p-4 border border-gray-200 inline-block">
                       <div className="flex items-center gap-3">
