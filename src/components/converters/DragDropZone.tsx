@@ -140,17 +140,13 @@ export default function DragDropZone({
   const getFileIcon = (fileName: string) => {
     const ext = fileName.split('.').pop()?.toLowerCase();
 
-    const iconClass = "w-5 h-5";
+    const iconClass = "w-7 h-7";
     
     if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp'].includes(ext || '')) {
-      return <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-        <File className={`${iconClass} text-blue-600`} />
-      </div>;
+      return <File className={`${iconClass} text-blue-600`} />;
     }
     
-    return <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-      <File className={`${iconClass} text-gray-600`} />
-    </div>;
+    return <File className={`${iconClass} text-indigo-600`} />;
   };
 
   return (
@@ -206,29 +202,36 @@ export default function DragDropZone({
       {/* Uploaded Files List */}
       {uploadedFiles.length > 0 && (
         <div className="space-y-3">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-1">
+            {uploadedFiles.length} {uploadedFiles.length === 1 ? 'File' : 'Files'} Ready
+          </p>
           {uploadedFiles.map(file => (
             <div
               key={file.id}
-              className="bg-white rounded-xl p-4 border border-gray-100 hover:shadow-md transition-shadow flex items-center gap-4"
+              className="group bg-white rounded-xl p-4 border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all flex items-center gap-4"
             >
               {showPreview && file.preview ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img 
                   src={file.preview} 
                   alt={file.name}
-                  className="w-12 h-12 rounded-lg object-cover"
+                  className="w-14 h-14 rounded-lg object-cover"
                 />
               ) : (
-                getFileIcon(file.name)
+                <div className="w-14 h-14 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg flex items-center justify-center">
+                  {getFileIcon(file.name)}
+                </div>
               )}
               
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-900 truncate text-sm">
+                <p className="font-semibold text-gray-900 truncate text-base mb-1">
                   {file.name}
                 </p>
-                <p className="text-xs text-gray-500">
-                  {formatFileSize(file.size)}
-                </p>
+                <div className="flex items-center gap-3 text-xs text-gray-500">
+                  <span>{formatFileSize(file.size)}</span>
+                  <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
+                  <span>{file.name.split('.').pop()?.toUpperCase()}</span>
+                </div>
               </div>
 
               <button
@@ -236,10 +239,10 @@ export default function DragDropZone({
                   e.stopPropagation();
                   onFileRemove(file.id);
                 }}
-                className="text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50"
+                className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all p-2 rounded-lg"
                 title="Remove file"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
           ))}
