@@ -20,6 +20,7 @@ export default function JSONFormatter() {
   const [sortKeys, setSortKeys] = useState(false);
   const [error, setError] = useState<ValidationError | null>(null);
   const [isValid, setIsValid] = useState<boolean | null>(null);
+  const [showCopied, setShowCopied] = useState(false);
 
   const formatJSON = () => {
     setError(null);
@@ -93,7 +94,8 @@ export default function JSONFormatter() {
   const handleCopy = () => {
     if (outputText) {
       navigator.clipboard.writeText(outputText);
-      alert('Copied to clipboard!');
+      setShowCopied(true);
+      setTimeout(() => setShowCopied(false), 2000);
     }
   };
 
@@ -133,6 +135,45 @@ export default function JSONFormatter() {
       icon={<Code className="w-8 h-8 text-white" />}
       badge="Free"
     >
+      {/* Format Mode Toggle */}
+      <div className="mb-6 flex items-center justify-center">
+        <div className="inline-flex items-center bg-white rounded-xl p-1.5 border-2 border-gray-200 shadow-sm">
+          <button
+            onClick={() => setFormatMode('beautify')}
+            className={`px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 ${
+              formatMode === 'beautify'
+                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            Beautify
+          </button>
+          <button
+            onClick={() => setFormatMode('minify')}
+            className={`px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 ${
+              formatMode === 'minify'
+                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Code className="w-4 h-4" />
+            Minify
+          </button>
+          <button
+            onClick={() => setFormatMode('validate')}
+            className={`px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 ${
+              formatMode === 'validate'
+                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <CheckCircle className="w-4 h-4" />
+            Validate
+          </button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Left Column: Input & Output (3 columns) */}
         <div className="lg:col-span-3 space-y-6">
@@ -162,7 +203,7 @@ export default function JSONFormatter() {
                   setIsValid(null);
                 }}
                 placeholder='Paste your JSON here...&#10;&#10;{"name": "John", "age": 30}'
-                className="w-full h-[700px] px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 text-sm font-mono text-gray-900 bg-gray-50 resize-none transition-colors"
+                className="w-full min-h-[300px] max-h-[700px] h-[400px] px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 text-sm font-mono text-gray-900 bg-gray-50 resize-y transition-colors"
               />
               
               <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
@@ -227,19 +268,38 @@ export default function JSONFormatter() {
                 )}
               </div>
 
-              <div className="bg-gray-900 rounded-lg p-4 overflow-auto h-[700px]">
-                {outputText ? (
-                  <pre className="text-xs text-green-400 font-mono whitespace-pre">
-                    {outputText}
-                  </pre>
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Code className="w-8 h-8 text-gray-600" />
+              <div className="relative group">
+                <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 rounded-xl p-5 overflow-auto min-h-[300px] max-h-[700px] h-[400px] border-2 border-indigo-100 shadow-inner">
+                  {outputText ? (
+                    <pre className="text-xs font-mono text-indigo-900 whitespace-pre leading-relaxed">
+                      {outputText}
+                    </pre>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center">
+                        <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Code className="w-8 h-8 text-indigo-400" />
+                        </div>
+                        <p className="text-gray-600 text-sm">Your formatted result will appear here</p>
                       </div>
-                      <p className="text-gray-500 text-sm">Your formatted result will appear here</p>
                     </div>
+                  )}
+                </div>
+                {/* Copy Button - shows on hover when output exists */}
+                {outputText && (
+                  <button
+                    onClick={handleCopy}
+                    className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-white border-2 border-indigo-200 hover:border-indigo-400 rounded-lg shadow-md hover:shadow-lg transition-all"
+                    title="Copy JSON"
+                  >
+                    <Copy className="w-4 h-4 text-indigo-600" />
+                  </button>
+                )}
+                
+                {/* Copied notification */}
+                {showCopied && (
+                  <div className="absolute top-16 right-3 px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg shadow-lg animate-bounce">
+                    ✓ Copied!
                   </div>
                 )}
               </div>
@@ -269,44 +329,7 @@ export default function JSONFormatter() {
 
               {/* Options */}
               <div className="space-y-5">
-                {/* Format Mode */}
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-800">Format Mode</label>
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => setFormatMode('beautify')}
-                      className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-all ${
-                        formatMode === 'beautify'
-                          ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-300 font-semibold'
-                          : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-indigo-200'
-                      }`}
-                    >
-                      ✨ Beautify
-                    </button>
-                    <button
-                      onClick={() => setFormatMode('minify')}
-                      className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-all ${
-                        formatMode === 'minify'
-                          ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-300 font-semibold'
-                          : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-indigo-200'
-                      }`}
-                    >
-                      🗜️ Minify
-                    </button>
-                    <button
-                      onClick={() => setFormatMode('validate')}
-                      className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-all ${
-                        formatMode === 'validate'
-                          ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-300 font-semibold'
-                          : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-indigo-200'
-                      }`}
-                    >
-                      ✅ Validate
-                    </button>
-                  </div>
-                </div>
-
-                {/* Indent Size */}
+                {/* Indent Size - Only show for beautify mode */}
                 {formatMode === 'beautify' && (
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-gray-800">Indent Size</label>

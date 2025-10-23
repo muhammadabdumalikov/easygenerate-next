@@ -21,26 +21,6 @@ import {
 // Popular tools configuration
 const popularTools = [
   {
-    id: 'universal-converter',
-    name: 'Universal Converter',
-    description: 'Convert any file to any format - 300+ formats supported',
-    icon: Grid,
-    iconColor: 'text-indigo-600',
-    iconBg: 'bg-indigo-100',
-    category: 'All',
-    href: '/tools/universal-converter'
-  },
-  {
-    id: 'image-to-pdf',
-    name: 'Image to PDF',
-    description: 'Convert images to PDF documents',
-    icon: Image,
-    iconColor: 'text-blue-600',
-    iconBg: 'bg-blue-100',
-    category: 'Image',
-    href: '/tools/image-to-pdf'
-  },
-  {
     id: 'csv-to-json',
     name: 'CSV to JSON',
     description: 'Transform CSV data to JSON format',
@@ -48,7 +28,8 @@ const popularTools = [
     iconColor: 'text-purple-600',
     iconBg: 'bg-purple-100',
     category: 'Data',
-    href: '/tools/csv-to-json'
+    href: '/tools/csv-to-json',
+    enabled: true
   },
   {
     id: 'csv-to-excel',
@@ -58,37 +39,8 @@ const popularTools = [
     iconColor: 'text-green-600',
     iconBg: 'bg-green-100',
     category: 'Data',
-    href: '/tools/csv-to-excel'
-  },
-  {
-    id: 'pdf-to-word',
-    name: 'PDF to Word',
-    description: 'Convert PDF to editable Word docs',
-    icon: FileText,
-    iconColor: 'text-red-600',
-    iconBg: 'bg-red-100',
-    category: 'Document',
-    href: '/tools/pdf-to-word'
-  },
-  {
-    id: 'video-compressor',
-    name: 'Video Compressor',
-    description: 'Reduce video file size easily',
-    icon: Video,
-    iconColor: 'text-orange-600',
-    iconBg: 'bg-orange-100',
-    category: 'Video',
-    href: '/tools/video-compressor'
-  },
-  {
-    id: 'audio-converter',
-    name: 'Audio Converter',
-    description: 'Convert MP3, WAV, FLAC and more',
-    icon: Music,
-    iconColor: 'text-green-600',
-    iconBg: 'bg-green-100',
-    category: 'Audio',
-    href: '/tools/audio-converter'
+    href: '/tools/csv-to-excel',
+    enabled: true
   },
   {
     id: 'json-formatter',
@@ -98,7 +50,63 @@ const popularTools = [
     iconColor: 'text-indigo-600',
     iconBg: 'bg-indigo-100',
     category: 'Data',
-    href: '/tools/json-formatter'
+    href: '/tools/json-formatter',
+    enabled: true
+  },
+  {
+    id: 'universal-converter',
+    name: 'Universal Converter',
+    description: 'Convert any file to any format - 300+ formats supported',
+    icon: Grid,
+    iconColor: 'text-indigo-600',
+    iconBg: 'bg-indigo-100',
+    category: 'All',
+    href: '/tools/universal-converter',
+    enabled: false
+  },
+  {
+    id: 'image-to-pdf',
+    name: 'Image to PDF',
+    description: 'Convert images to PDF documents',
+    icon: Image,
+    iconColor: 'text-blue-600',
+    iconBg: 'bg-blue-100',
+    category: 'Image',
+    href: '/tools/image-to-pdf',
+    enabled: false
+  },
+  {
+    id: 'pdf-to-word',
+    name: 'PDF to Word',
+    description: 'Convert PDF to editable Word docs',
+    icon: FileText,
+    iconColor: 'text-red-600',
+    iconBg: 'bg-red-100',
+    category: 'Document',
+    href: '/tools/pdf-to-word',
+    enabled: false
+  },
+  {
+    id: 'video-compressor',
+    name: 'Video Compressor',
+    description: 'Reduce video file size easily',
+    icon: Video,
+    iconColor: 'text-orange-600',
+    iconBg: 'bg-orange-100',
+    category: 'Video',
+    href: '/tools/video-compressor',
+    enabled: false
+  },
+  {
+    id: 'audio-converter',
+    name: 'Audio Converter',
+    description: 'Convert MP3, WAV, FLAC and more',
+    icon: Music,
+    iconColor: 'text-green-600',
+    iconBg: 'bg-green-100',
+    category: 'Audio',
+    href: '/tools/audio-converter',
+    enabled: false
   }
 ];
 
@@ -194,12 +202,45 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredTools.map((tool) => {
               const IconComponent = tool.icon;
+              
+              // Disabled tool (Coming Soon)
+              if (!tool.enabled) {
+                return (
+                  <div
+                    key={tool.id}
+                    className="relative group bg-white rounded-2xl p-6 border-2 border-gray-100 opacity-60 cursor-not-allowed"
+                  >
+                    <div className="absolute top-4 right-4 z-10">
+                      <span className="px-3 py-1 bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 text-xs font-bold rounded-full border-2 border-amber-200 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                        🚀 Coming Soon
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-start gap-4 filter grayscale">
+                      <div className={`w-12 h-12 ${tool.iconBg} rounded-xl flex items-center justify-center`}>
+                        <IconComponent className={`w-6 h-6 ${tool.iconColor}`} />
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                          {tool.name}
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          {tool.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              
+              // Enabled tool
               return (
                 <Link
                   key={tool.id}
                   href={tool.href}
-                  className="group bg-white rounded-2xl p-6 border-2 border-gray-100 hover:border-indigo-300 hover:shadow-xl transition-all duration-300"
-                >
+                  className="relative group bg-white rounded-2xl p-6 border-2 border-gray-100 hover:border-indigo-300 hover:shadow-xl transition-all duration-300"
+                > 
                   <div className="flex items-start gap-4">
                     <div className={`w-12 h-12 ${tool.iconBg} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
                       <IconComponent className={`w-6 h-6 ${tool.iconColor}`} />

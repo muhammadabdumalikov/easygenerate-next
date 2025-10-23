@@ -115,7 +115,7 @@ export default function ResultPreview({
             {showCopyButton && (
               <button
                 onClick={handleCopy}
-                className="px-4 py-2 bg-white border-2 border-gray-200 text-gray-700 rounded-lg hover:border-indigo-300 transition-all text-sm font-medium flex items-center gap-2"
+                className="w-20 px-4 py-2 bg-white border-2 border-gray-200 text-gray-700 rounded-lg hover:border-indigo-300 transition-all text-sm font-medium flex items-center justify-center gap-2"
               >
                 {copied ? (
                   <>

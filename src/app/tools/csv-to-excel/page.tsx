@@ -28,6 +28,7 @@ export default function CSVToExcel() {
   const [inputText, setInputText] = useState('');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [inputMode, setInputMode] = useState<'text' | 'file'>('text');
+  const [conversionMode, setConversionMode] = useState<'csv-to-excel' | 'excel-to-csv'>('csv-to-excel');
   const [status, setStatus] = useState<ConversionStatus>('idle');
   const [progress, setProgress] = useState(0);
   const [convertedData, setConvertedData] = useState<ConvertedResult | null>(null);
@@ -62,13 +63,74 @@ export default function CSVToExcel() {
     });
   };
 
+  const excelToCSV = async (file: File): Promise<{ csv: string; rows: number; columns: number }> => {
+    const delimiter = getDelimiter(options.delimiter);
+    
+    // Read Excel file
+    const arrayBuffer = await file.arrayBuffer();
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(arrayBuffer);
+    
+    // Get first worksheet (or use options.sheetName if we want to be fancy)
+    const worksheet = workbook.worksheets[0];
+    if (!worksheet) {
+      throw new Error('No worksheet found in Excel file');
+    }
+    
+    const rows: string[][] = [];
+    let maxColumns = 0;
+    
+    // Extract all rows
+    worksheet.eachRow((row, rowNumber) => {
+      const rowData: string[] = [];
+      row.eachCell({ includeEmpty: true }, (cell) => {
+        const value = cell.value;
+        let cellValue = '';
+        
+        if (value === null || value === undefined) {
+          cellValue = '';
+        } else if (typeof value === 'object' && 'text' in value) {
+          // Rich text
+          cellValue = value.text;
+        } else if (typeof value === 'object' && 'result' in value) {
+          // Formula
+          cellValue = String(value.result ?? '');
+        } else {
+          cellValue = String(value);
+        }
+        
+        // Escape values that contain delimiter or quotes
+        if (cellValue.includes(delimiter) || cellValue.includes('"') || cellValue.includes('\n')) {
+          cellValue = `"${cellValue.replace(/"/g, '""')}"`;
+        }
+        
+        rowData.push(cellValue);
+      });
+      
+      rows.push(rowData);
+      maxColumns = Math.max(maxColumns, rowData.length);
+    });
+    
+    // Convert to CSV string
+    const csv = rows.map(row => row.join(delimiter)).join('\n');
+    
+    return {
+      csv,
+      rows: rows.length,
+      columns: maxColumns
+    };
+  };
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Check file type
-    if (!file.name.toLowerCase().endsWith('.csv')) {
-      alert('Please select a CSV file (.csv)');
+    // Check file type based on conversion mode
+    const expectedExtension = conversionMode === 'csv-to-excel' ? '.csv' : '.xlsx';
+    const fileName = file.name.toLowerCase();
+    
+    if (!fileName.endsWith(expectedExtension)) {
+      alert(`Please select a ${expectedExtension.toUpperCase()} file (${expectedExtension})`);
       return;
     }
 
@@ -84,13 +146,20 @@ export default function CSVToExcel() {
     setStatus('idle');
     setConvertedData(null);
 
-    // Read file content
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const content = e.target?.result as string;
-      setInputText(content);
-    };
-    reader.readAsText(file);
+    // Read file content based on conversion mode
+    if (conversionMode === 'csv-to-excel') {
+      // Read CSV as text
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        setInputText(content);
+      };
+      reader.readAsText(file);
+    } else {
+      // For Excel files, we'll read them during conversion
+      // Just mark the file as uploaded
+      setInputText('Excel file loaded'); // Placeholder text
+    }
   };
 
   const removeUploadedFile = () => {
@@ -101,7 +170,13 @@ export default function CSVToExcel() {
   };
 
   const handleConvert = async () => {
-    if (!inputText.trim()) {
+    // For Excel to CSV mode, we need an uploaded file
+    if (conversionMode === 'excel-to-csv' && !uploadedFile) {
+      alert('Please upload an Excel file first');
+      return;
+    }
+    
+    if (!inputText.trim() && conversionMode === 'csv-to-excel') {
       return;
     }
 
@@ -116,7 +191,35 @@ export default function CSVToExcel() {
     setProgress(0);
 
     try {
-      // Parse CSV
+      if (conversionMode === 'excel-to-csv') {
+        // Excel to CSV conversion
+        if (!uploadedFile) return;
+        
+        setProgress(20);
+        const { csv, rows, columns } = await excelToCSV(uploadedFile);
+        
+        setProgress(80);
+        
+        const result: ConvertedResult = {
+          fileName: `converted_${Date.now()}.csv`,
+          rows,
+          columns,
+          fileSize: new Blob([csv]).size,
+          preview: csv.split('\n').slice(0, 10).map(line => line.split(getDelimiter(options.delimiter)))
+        };
+        
+        // Store CSV data in a way that can be downloaded
+        const csvBlob = new Blob([csv], { type: 'text/csv' });
+        const buffer = await csvBlob.arrayBuffer();
+        result.buffer = buffer;
+        
+        setConvertedData(result);
+        setProgress(100);
+        setStatus('success');
+        return;
+      }
+      
+      // CSV to Excel conversion (existing logic)
       const delimiter = getDelimiter(options.delimiter);
       const data = parseCSV(inputText, delimiter);
       
@@ -219,9 +322,11 @@ export default function CSVToExcel() {
     if (!convertedData?.buffer) return;
     
     try {
-      const blob = new Blob([convertedData.buffer], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      });
+      const mimeType = conversionMode === 'csv-to-excel'
+        ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        : 'text/csv';
+        
+      const blob = new Blob([convertedData.buffer], { type: mimeType });
       
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -255,7 +360,6 @@ Coffee Maker,Appliances,89.99,56`;
   const clearAll = () => {
     setInputText('');
     setUploadedFile(null);
-    setInputMode('text');
     setStatus('idle');
     setConvertedData(null);
     setProgress(0);
@@ -269,11 +373,55 @@ Coffee Maker,Appliances,89.99,56`;
 
   return (
     <ConverterLayout
-      title="CSV to Excel Converter"
-      description="Convert CSV files to Excel spreadsheets (.xlsx format) with custom formatting, headers, and sheet options. Perfect for data analysis and reporting."
+      title={conversionMode === 'csv-to-excel' ? "CSV to Excel Converter" : "Excel to CSV Converter"}
+      description={
+        conversionMode === 'csv-to-excel'
+          ? "Convert CSV files to Excel spreadsheets (.xlsx format) with custom formatting, headers, and sheet options. Perfect for data analysis and reporting."
+          : "Convert Excel spreadsheets (.xlsx) back to CSV format. Extract data from Excel files with your preferred delimiter."
+      }
       icon={<Table className="w-8 h-8 text-white" />}
       badge="Free"
     >
+      {/* Conversion Mode Toggle */}
+      <div className="mb-6 flex items-center justify-center">
+        <div className="inline-flex items-center bg-white rounded-xl p-1.5 border-2 border-gray-200 shadow-sm">
+          <button
+            onClick={() => {
+              setConversionMode('csv-to-excel');
+              setInputText('');
+              setUploadedFile(null);
+              setConvertedData(null);
+              setStatus('idle');
+            }}
+            className={`px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 ${
+              conversionMode === 'csv-to-excel'
+                ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-md'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            CSV → Excel
+          </button>
+          <button
+            onClick={() => {
+              setConversionMode('excel-to-csv');
+              setInputText('');
+              setUploadedFile(null);
+              setConvertedData(null);
+              setStatus('idle');
+            }}
+            className={`px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 ${
+              conversionMode === 'excel-to-csv'
+                ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-md'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Table className="w-4 h-4" />
+            Excel → CSV
+          </button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Left Column: Input & Preview (3 columns) */}
         <div className="lg:col-span-3 space-y-6">
@@ -283,8 +431,14 @@ Coffee Maker,Appliances,89.99,56`;
             <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-indigo-600" />
-                  <h3 className="text-lg font-semibold text-gray-900">CSV Input</h3>
+                  {conversionMode === 'csv-to-excel' ? (
+                    <FileText className="w-5 h-5 text-indigo-600" />
+                  ) : (
+                    <Table className="w-5 h-5 text-green-600" />
+                  )}
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {conversionMode === 'csv-to-excel' ? 'CSV' : 'Excel'} Input
+                  </h3>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -296,126 +450,76 @@ Coffee Maker,Appliances,89.99,56`;
                 </div>
               </div>
 
-              {/* Input Mode Toggle */}
-              <div className="flex gap-2 mb-4">
-                <button
-                  onClick={() => {
-                    setInputMode('text');
-                    setUploadedFile(null);
-                  }}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
-                    inputMode === 'text'
-                      ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-300'
-                      : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-indigo-200'
-                  }`}
-                >
-                  📝 Paste Text
-                </button>
-                <button
-                  onClick={() => {
-                    setInputMode('file');
-                    setInputText('');
-                  }}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
-                    inputMode === 'file'
-                      ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-300'
-                      : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-indigo-200'
-                  }`}
-                >
-                  📁 Upload File
-                </button>
+              {/* File Upload Area */}
+              <div className="mb-4 min-h-[400px]">
+                {!uploadedFile ? (
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-indigo-400 transition-colors p-12 min-h-[400px] flex items-center justify-center">
+                    <input
+                      type="file"
+                      accept={conversionMode === 'csv-to-excel' ? '.csv' : '.xlsx'}
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      id="file-upload"
+                    />
+                    <label
+                      htmlFor="file-upload"
+                      className="cursor-pointer flex flex-col items-center gap-2"
+                    >
+                      <Upload className="text-gray-400 w-16 h-16" />
+                      <p className="font-medium text-gray-600 text-lg">
+                        Click to upload {conversionMode === 'csv-to-excel' ? 'CSV' : 'Excel'} file
+                      </p>
+                      <p className="text-gray-500 text-base">or drag and drop</p>
+                      <p className="text-xs text-gray-400">Max size: {formatFileSize(MAX_INPUT_SIZE)}</p>
+                    </label>
+                  </div>
+                ) : (
+                  <div className="bg-green-50 border border-green-200 rounded-lg flex items-center justify-between p-8 min-h-[400px]">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-green-100 rounded-lg flex items-center justify-center w-16 h-16">
+                        {conversionMode === 'csv-to-excel' ? (
+                          <FileText className="text-green-600 w-8 h-8" />
+                        ) : (
+                          <Table className="text-green-600 w-8 h-8" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-green-800 text-lg">{uploadedFile.name}</p>
+                        <p className="text-green-600 text-sm">{formatFileSize(uploadedFile.size)}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={removeUploadedFile}
+                      className="text-green-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors p-3"
+                      title="Remove file"
+                    >
+                      <X className="w-6 h-6" />
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {/* File Upload Area */}
-              {inputMode === 'file' && (
+              {/* Text Input Area - Only show for CSV to Excel mode */}
+              {conversionMode === 'csv-to-excel' && (
                 <div className="mb-4">
-                  {!uploadedFile ? (
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-indigo-400 transition-colors">
-                      <input
-                        type="file"
-                        accept=".csv"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                        id="csv-upload"
-                      />
-                      <label
-                        htmlFor="csv-upload"
-                        className="cursor-pointer flex flex-col items-center gap-2"
-                      >
-                        <Upload className="w-8 h-8 text-gray-400" />
-                        <p className="text-sm font-medium text-gray-600">Click to upload CSV file</p>
-                        <p className="text-xs text-gray-500">or drag and drop</p>
-                        <p className="text-xs text-gray-400">Max size: {formatFileSize(MAX_INPUT_SIZE)}</p>
-                      </label>
-                    </div>
-                  ) : (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                          <FileText className="w-5 h-5 text-green-600" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-green-800">{uploadedFile.name}</p>
-                          <p className="text-xs text-green-600">{formatFileSize(uploadedFile.size)}</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={removeUploadedFile}
-                        className="p-2 text-green-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Remove file"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Or paste your CSV data directly:
+                  </label>
+                  <textarea
+                    value={inputText}
+                    onChange={(e) => {
+                      setInputText(e.target.value);
+                      setStatus('idle');
+                      setConvertedData(null);
+                    }}
+                    placeholder="Paste your CSV data here...\n\nProduct,Price,Stock\nLaptop,999.99,45\nMouse,29.99,150"
+                    className="w-full min-h-[200px] max-h-[400px] h-[250px] px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 text-sm font-mono text-gray-900 bg-gray-50 resize-y transition-colors textarea-scrollbar"
+                  />
                 </div>
               )}
 
-              {/* Text Input Area - Only show when in text mode or file mode without uploaded file */}
-              {(inputMode === 'text' || (inputMode === 'file' && !uploadedFile)) && (
-                <textarea
-                  value={inputText}
-                  onChange={(e) => {
-                    setInputText(e.target.value);
-                    setStatus('idle');
-                    setConvertedData(null);
-                  }}
-                  placeholder={inputMode === 'text' 
-                    ? "Paste your CSV data here...&#10;&#10;Product,Price,Stock&#10;Laptop,999.99,45&#10;Mouse,29.99,150"
-                    : "Upload a CSV file above to see its content here..."
-                  }
-                  className="w-full h-[700px] px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 text-sm font-mono text-gray-900 bg-gray-50 resize-none transition-colors textarea-scrollbar"
-                  readOnly={inputMode === 'file' && !uploadedFile}
-                />
-              )}
-
-              {/* File Uploaded Success Message */}
-              {inputMode === 'file' && uploadedFile && (
-                <div className="h-[700px] flex items-center justify-center bg-gray-50 rounded-lg border-2 border-gray-200">
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <CheckCircle className="w-8 h-8 text-green-600" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">File Ready for Conversion</h3>
-                    <p className="text-sm text-gray-600 mb-4">
-                      Your CSV file has been loaded successfully.<br />
-                      Click &quot;Convert to Excel&quot; to generate your spreadsheet.
-                    </p>
-                    <div className="bg-white rounded-lg p-4 border border-gray-200 inline-block">
-                      <div className="flex items-center gap-3">
-                        <FileText className="w-5 h-5 text-green-600" />
-                        <div className="text-left">
-                          <p className="text-sm font-semibold text-gray-900">{uploadedFile.name}</p>
-                          <p className="text-xs text-gray-500">{formatFileSize(uploadedFile.size)} • {inputText.split('\n').filter(l => l.trim()).length} lines</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {/* File info and warnings - Only show when not in file upload mode with uploaded file */}
-              {!(inputMode === 'file' && uploadedFile) && (
+              {/* File info and warnings - Only show for CSV to Excel mode */}
+              {conversionMode === 'csv-to-excel' && (
                 <>
                   <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
                     <span>{inputText.split('\n').filter(l => l.trim()).length} lines</span>
@@ -439,6 +543,7 @@ Coffee Maker,Appliances,89.99,56`;
                   })()}
                 </>
               )}
+              
             </div>
 
             {/* Right: Preview/Result Area */}
@@ -446,7 +551,9 @@ Coffee Maker,Appliances,89.99,56`;
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <Table className="w-5 h-5 text-green-600" />
-                  <h3 className="text-lg font-semibold text-gray-900">Excel Preview</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {conversionMode === 'csv-to-excel' ? 'Excel' : 'CSV'} Preview
+                  </h3>
                 </div>
               </div>
 
@@ -541,7 +648,7 @@ Coffee Maker,Appliances,89.99,56`;
                       className="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-4 rounded-xl font-semibold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
                     >
                       <Download className="w-5 h-5" />
-                      Download Excel File ({formatFileSize(convertedData.fileSize)})
+                      Download {conversionMode === 'csv-to-excel' ? 'Excel' : 'CSV'} File ({formatFileSize(convertedData.fileSize)})
                     </button>
 
                     {/* File info */}
@@ -551,7 +658,7 @@ Coffee Maker,Appliances,89.99,56`;
                         <div>Rows: {convertedData.rows.toLocaleString()}</div>
                         <div>Columns: {convertedData.columns}</div>
                         <div>Size: {formatFileSize(convertedData.fileSize)}</div>
-                        <div>Format: .xlsx</div>
+                        <div>Format: {conversionMode === 'csv-to-excel' ? '.xlsx' : '.csv'}</div>
                       </div>
                     </div>
                   </div>
@@ -671,13 +778,13 @@ Coffee Maker,Appliances,89.99,56`;
             </div>
 
             {/* Convert Button */}
-            {inputText.trim() && status !== 'processing' && (
+            {(uploadedFile || (conversionMode === 'csv-to-excel' && inputText.trim())) && status !== 'processing' && (
               <button
                 onClick={handleConvert}
                 className="w-full mt-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-4 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
               >
                 <Table className="w-5 h-5" />
-                Convert to Excel
+                Convert to {conversionMode === 'csv-to-excel' ? 'Excel' : 'CSV'}
               </button>
             )}
 

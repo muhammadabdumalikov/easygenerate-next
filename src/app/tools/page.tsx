@@ -25,6 +25,7 @@ interface Tool {
   description: string;
   badge?: string;
   href: string;
+  enabled?: boolean;
 }
 
 // Tool group definition
@@ -41,24 +42,6 @@ interface ToolGroup {
 // Grouped tools by source file type
 const toolGroups: ToolGroup[] = [
   {
-    id: 'universal',
-    source: 'Universal',
-    description: 'Convert any file to any format',
-    icon: Grid,
-    iconColor: 'text-indigo-600',
-    iconBg: 'bg-indigo-100',
-    tools: [
-      {
-        id: 'universal-converter',
-        name: 'Universal',
-        to: 'Any Format',
-        description: 'Batch convert files between 300+ formats',
-        badge: 'Popular',
-        href: '/tools/universal-converter'
-      }
-    ]
-  },
-  {
     id: 'csv',
     source: 'CSV',
     description: 'Convert CSV files to other formats',
@@ -72,7 +55,8 @@ const toolGroups: ToolGroup[] = [
         to: 'Excel',
         description: 'Create Excel spreadsheets (.xlsx) with formatting',
         badge: 'New',
-        href: '/tools/csv-to-excel'
+        href: '/tools/csv-to-excel',
+        enabled: true
       },
       {
         id: 'csv-to-json',
@@ -80,7 +64,8 @@ const toolGroups: ToolGroup[] = [
         to: 'JSON',
         description: 'Transform CSV data into JSON format',
         badge: 'Popular',
-        href: '/tools/csv-to-json'
+        href: '/tools/csv-to-json',
+        enabled: true
       }
     ]
   },
@@ -97,7 +82,27 @@ const toolGroups: ToolGroup[] = [
         name: 'JSON',
         to: 'Formatter',
         description: 'Beautify, minify, and validate JSON data',
-        href: '/tools/json-formatter'
+        href: '/tools/json-formatter',
+        enabled: true
+      }
+    ]
+  },
+  {
+    id: 'universal',
+    source: 'Universal',
+    description: 'Convert any file to any format',
+    icon: Grid,
+    iconColor: 'text-indigo-600',
+    iconBg: 'bg-indigo-100',
+    tools: [
+      {
+        id: 'universal-converter',
+        name: 'Universal',
+        to: 'Any Format',
+        description: 'Batch convert files between 300+ formats',
+        badge: 'Popular',
+        href: '/tools/universal-converter',
+        enabled: false
       }
     ]
   },
@@ -114,14 +119,16 @@ const toolGroups: ToolGroup[] = [
         name: 'PDF',
         to: 'Word',
         description: 'Convert PDF to editable Word documents',
-        href: '/tools/pdf-to-word'
+        href: '/tools/pdf-to-word',
+        enabled: false
       },
       {
         id: 'pdf-to-image',
         name: 'PDF',
         to: 'Image',
         description: 'Extract images or convert PDF pages to images',
-        href: '/tools/pdf-to-image'
+        href: '/tools/pdf-to-image',
+        enabled: false
       }
     ]
   },
@@ -139,14 +146,16 @@ const toolGroups: ToolGroup[] = [
         to: 'PDF',
         description: 'Combine multiple images into PDF documents',
         badge: 'Popular',
-        href: '/tools/image-to-pdf'
+        href: '/tools/image-to-pdf',
+        enabled: false
       },
       {
         id: 'image-compressor',
         name: 'Image',
         to: 'Compressed',
         description: 'Reduce image file size without quality loss',
-        href: '/tools/image-compressor'
+        href: '/tools/image-compressor',
+        enabled: false
       }
     ]
   },
@@ -163,14 +172,16 @@ const toolGroups: ToolGroup[] = [
         name: 'Video',
         to: 'Compressed',
         description: 'Reduce video file size while maintaining quality',
-        href: '/tools/video-compressor'
+        href: '/tools/video-compressor',
+        enabled: false
       },
       {
         id: 'video-to-gif',
         name: 'Video',
         to: 'GIF',
         description: 'Convert video clips to animated GIFs',
-        href: '/tools/video-to-gif'
+        href: '/tools/video-to-gif',
+        enabled: false
       }
     ]
   },
@@ -187,14 +198,15 @@ const toolGroups: ToolGroup[] = [
         name: 'Audio',
         to: 'Any Format',
         description: 'Convert between MP3, WAV, FLAC, and more',
-        href: '/tools/audio-converter'
+        href: '/tools/audio-converter',
+        enabled: false
       }
     ]
   }
 ];
 
 export default function ToolsPage() {
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(['universal', 'csv']);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(['csv', 'json']);
   const [searchQuery, setSearchQuery] = useState('');
 
   const toggleGroup = (groupId: string) => {
@@ -312,41 +324,76 @@ export default function ToolsPage() {
                 {isExpanded && (
                   <div className="px-6 pb-6 pt-2">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                      {group.tools.map((tool) => (
-                        <Link
-                          key={tool.id}
-                          href={tool.href}
-                          className="group p-4 border-2 border-gray-100 rounded-xl hover:border-indigo-300 hover:bg-indigo-50/50 transition-all"
-                        >
-                          <div className="flex flex-col gap-2">
-                            <div className="flex items-start justify-between">
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="text-base font-bold text-gray-900 group-hover:text-indigo-600 transition-colors whitespace-nowrap">
-                                  {tool.name}
-                                </span>
-                                <ArrowRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-indigo-600 transition-colors flex-shrink-0" />
-                                <span className="text-base font-bold text-indigo-600 whitespace-nowrap">
-                                  {tool.to}
+                      {group.tools.map((tool) => {
+                        // Disabled tool (Coming Soon)
+                        if (tool.enabled === false) {
+                          return (
+                            <div
+                              key={tool.id}
+                              className="relative group p-4 border-2 border-gray-100 rounded-xl opacity-60 cursor-not-allowed bg-gray-50"
+                            >
+                              <div className="absolute top-2 right-2 z-10">
+                                <span className="px-2 py-0.5 bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 text-xs font-bold rounded-full border border-amber-200 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  Soon
                                 </span>
                               </div>
+                              <div className="flex flex-col gap-2 filter grayscale">
+                                <div className="flex items-start justify-between pr-12">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="text-base font-bold text-gray-900 whitespace-nowrap">
+                                      {tool.name}
+                                    </span>
+                                    <ArrowRight className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                                    <span className="text-base font-bold text-gray-600 whitespace-nowrap">
+                                      {tool.to}
+                                    </span>
+                                  </div>
+                                </div>
+                                <p className="text-sm text-gray-600 leading-snug">
+                                  {tool.description}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        }
+                        
+                        // Enabled tool
+                        return (
+                          <Link
+                            key={tool.id}
+                            href={tool.href}
+                            className="relative group p-4 border-2 border-gray-100 rounded-xl hover:border-indigo-300 hover:bg-indigo-50/50 transition-all"
+                          >
+                            <div className="flex flex-col gap-2">
+                              <div className="flex items-start justify-between">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="text-base font-bold text-gray-900 group-hover:text-indigo-600 transition-colors whitespace-nowrap">
+                                    {tool.name}
+                                  </span>
+                                  <ArrowRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-indigo-600 transition-colors flex-shrink-0" />
+                                  <span className="text-base font-bold text-indigo-600 whitespace-nowrap">
+                                    {tool.to}
+                                  </span>
+                                </div>
+                              </div>
+                              <p className="text-sm text-gray-600 group-hover:text-gray-700 leading-snug">
+                                {tool.description}
+                              </p>
                               {tool.badge && (
-                                <span className={`px-2 py-0.5 text-xs font-semibold rounded-full flex-shrink-0 ${
+                                <span className={`inline-block w-fit px-2 py-0.5 text-xs font-semibold rounded-full mt-1 ${
                                   tool.badge === 'Popular' 
-                                    ? 'bg-orange-100 text-orange-700'
+                                    ? 'bg-orange-100 text-orange-700 border border-orange-200'
                                     : tool.badge === 'New'
-                                    ? 'bg-green-100 text-green-700'
-                                    : 'bg-gray-100 text-gray-700'
+                                    ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                                    : 'bg-gray-100 text-gray-700 border border-gray-200'
                                 }`}>
                                   {tool.badge}
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm text-gray-600 group-hover:text-gray-700 leading-snug">
-                              {tool.description}
-                            </p>
-                          </div>
-                        </Link>
-                      ))}
+                          </Link>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

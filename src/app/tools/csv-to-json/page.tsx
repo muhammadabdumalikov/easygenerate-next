@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FileText, Code } from 'react-feather';
+import { FileText, Code, Copy } from 'react-feather';
 import ConverterLayout from '@/components/converters/ConverterLayout';
 import OptionsPanel, { OptionConfig } from '@/components/converters/OptionsPanel';
 import ResultPreview, { ConversionStatus } from '@/components/converters/ResultPreview';
@@ -18,6 +18,8 @@ export default function CSVToJSONConverter() {
   const [status, setStatus] = useState<ConversionStatus>('idle');
   const [progress, setProgress] = useState(0);
   const [convertedData, setConvertedData] = useState<ConvertedResult | null>(null);
+  const [showCopied, setShowCopied] = useState(false);
+  const [conversionMode, setConversionMode] = useState<'csv-to-json' | 'json-to-csv'>('csv-to-json');
   const [options, setOptions] = useState({
     delimiter: 'comma',
     includeHeaders: true,
@@ -122,6 +124,43 @@ export default function CSVToJSONConverter() {
       : result;
   };
 
+  const jsonToCsv = (jsonString: string) => {
+    const data = JSON.parse(jsonString);
+    const delimiter = getDelimiter();
+    
+    // Handle array of objects or object with data property
+    let items = Array.isArray(data) ? data : (data.data || [data]);
+    
+    if (items.length === 0) return '';
+    
+    // Get all unique keys from all objects
+    const allKeys: string[] = Array.from(
+      new Set(items.flatMap((item: Record<string, unknown>) => Object.keys(item)))
+    );
+    
+    // Create header row
+    const headers = options.includeHeaders 
+      ? allKeys.join(delimiter)
+      : '';
+    
+    // Create data rows
+    const rows = items.map((item: Record<string, unknown>) => 
+      allKeys.map(key => {
+        const value = item[key];
+        // Handle values with delimiters or quotes
+        const stringValue = String(value ?? '');
+        if (stringValue.includes(delimiter) || stringValue.includes('"') || stringValue.includes('\n')) {
+          return `"${stringValue.replace(/"/g, '""')}"`;
+        }
+        return stringValue;
+      }).join(delimiter)
+    );
+    
+    return options.includeHeaders 
+      ? [headers, ...rows].join('\n')
+      : rows.join('\n');
+  };
+
   const handleConvert = async () => {
     if (!inputText.trim()) return;
 
@@ -143,17 +182,29 @@ export default function CSVToJSONConverter() {
       setProgress(100);
       
       try {
-        const json = csvToJson(inputText);
-        const jsonString = options.prettyPrint 
-          ? JSON.stringify(json, null, 2)
-          : JSON.stringify(json);
-        
-        setConvertedData({
-          json: jsonString,
-          parsed: json,
-          lines: inputText.split('\n').length,
-          size: new Blob([jsonString]).size
-        });
+        if (conversionMode === 'csv-to-json') {
+          const json = csvToJson(inputText);
+          const jsonString = options.prettyPrint 
+            ? JSON.stringify(json, null, 2)
+            : JSON.stringify(json);
+          
+          setConvertedData({
+            json: jsonString,
+            parsed: json,
+            lines: inputText.split('\n').length,
+            size: new Blob([jsonString]).size
+          });
+        } else {
+          // JSON to CSV
+          const csv = jsonToCsv(inputText);
+          
+          setConvertedData({
+            json: csv,
+            parsed: csv,
+            lines: csv.split('\n').length,
+            size: new Blob([csv]).size
+          });
+        }
         setStatus('success');
       } catch {
         setStatus('error');
@@ -164,11 +215,14 @@ export default function CSVToJSONConverter() {
   const handleDownload = () => {
     if (!convertedData) return;
     
-    const blob = new Blob([convertedData.json], { type: 'application/json' });
+    const fileType = conversionMode === 'csv-to-json' ? 'application/json' : 'text/csv';
+    const fileName = conversionMode === 'csv-to-json' ? 'converted.json' : 'converted.csv';
+    
+    const blob = new Blob([convertedData.json], { type: fileType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'converted.json';
+    a.download = fileName;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -176,6 +230,8 @@ export default function CSVToJSONConverter() {
   const handleCopy = () => {
     if (convertedData) {
       navigator.clipboard.writeText(convertedData.json);
+      setShowCopied(true);
+      setTimeout(() => setShowCopied(false), 2000);
     }
   };
 
@@ -190,19 +246,82 @@ John Doe,john@example.com,30,New York
 Jane Smith,jane@example.com,25,Los Angeles
 Bob Johnson,bob@example.com,35,Chicago`;
 
+  const sampleJSON = `[
+  {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "age": 30,
+    "city": "New York"
+  },
+  {
+    "name": "Jane Smith",
+    "email": "jane@example.com",
+    "age": 25,
+    "city": "Los Angeles"
+  },
+  {
+    "name": "Bob Johnson",
+    "email": "bob@example.com",
+    "age": 35,
+    "city": "Chicago"
+  }
+]`;
+
   const loadSample = () => {
-    setInputText(sampleCSV);
+    setInputText(conversionMode === 'csv-to-json' ? sampleCSV : sampleJSON);
     setStatus('idle');
     setConvertedData(null);
   };
 
   return (
     <ConverterLayout
-      title="CSV to JSON Converter"
-      description="Convert CSV data to JSON format instantly. Customize delimiter, headers, and output structure. Perfect for developers and data analysts."
+      title={conversionMode === 'csv-to-json' ? "CSV to JSON Converter" : "JSON to CSV Converter"}
+      description={
+        conversionMode === 'csv-to-json' 
+          ? "Convert CSV data to JSON format instantly. Customize delimiter, headers, and output structure. Perfect for developers and data analysts."
+          : "Convert JSON data back to CSV format. Extract data from JSON arrays and objects into CSV files."
+      }
       icon={<Code className="w-8 h-8 text-white" />}
       badge="Free"
     >
+      {/* Conversion Mode Toggle */}
+      <div className="mb-6 flex items-center justify-center">
+        <div className="inline-flex items-center bg-white rounded-xl p-1.5 border-2 border-gray-200 shadow-sm">
+          <button
+            onClick={() => {
+              setConversionMode('csv-to-json');
+              setInputText('');
+              setConvertedData(null);
+              setStatus('idle');
+            }}
+            className={`px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 ${
+              conversionMode === 'csv-to-json'
+                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            CSV → JSON
+          </button>
+          <button
+            onClick={() => {
+              setConversionMode('json-to-csv');
+              setInputText('');
+              setConvertedData(null);
+              setStatus('idle');
+            }}
+            className={`px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 ${
+              conversionMode === 'json-to-csv'
+                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Code className="w-4 h-4" />
+            JSON → CSV
+          </button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Left Column: Input & Output (3 columns) */}
         <div className="lg:col-span-3 space-y-6">
@@ -212,8 +331,14 @@ Bob Johnson,bob@example.com,35,Chicago`;
           <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-indigo-600" />
-                <h3 className="text-lg font-semibold text-gray-900">CSV Input</h3>
+                {conversionMode === 'csv-to-json' ? (
+                  <FileText className="w-5 h-5 text-indigo-600" />
+                ) : (
+                  <Code className="w-5 h-5 text-purple-600" />
+                )}
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {conversionMode === 'csv-to-json' ? 'CSV Input' : 'JSON Input'}
+                </h3>
               </div>
               <button
                 onClick={loadSample}
@@ -223,16 +348,20 @@ Bob Johnson,bob@example.com,35,Chicago`;
               </button>
             </div>
             
-            <textarea
-              value={inputText}
-              onChange={(e) => {
-                setInputText(e.target.value);
-                setStatus('idle');
-                setConvertedData(null);
-              }}
-              placeholder="Paste your CSV data here...&#10;&#10;name,email,age&#10;John,john@example.com,30&#10;Jane,jane@example.com,25"
-              className="w-full h-[700px] px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 text-sm font-mono text-gray-900 bg-gray-50 resize-none transition-colors"
-            />
+              <textarea
+                value={inputText}
+                onChange={(e) => {
+                  setInputText(e.target.value);
+                  setStatus('idle');
+                  setConvertedData(null);
+                }}
+                placeholder={
+                  conversionMode === 'csv-to-json'
+                    ? "Paste your CSV data here...&#10;&#10;name,email,age&#10;John,john@example.com,30&#10;Jane,jane@example.com,25"
+                    : 'Paste your JSON data here...&#10;&#10;[&#10;  {"name": "John", "email": "john@example.com", "age": 30},&#10;  {"name": "Jane", "email": "jane@example.com", "age": 25}&#10;]'
+                }
+                className="w-full min-h-[300px] max-h-[700px] h-[400px] px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 text-sm font-mono text-gray-900 bg-gray-50 resize-y transition-colors"
+              />
             
             <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
               <span>{inputText.split('\n').filter(l => l.trim()).length} lines</span>
@@ -274,13 +403,33 @@ Bob Johnson,bob@example.com,35,Chicago`;
                       </div>
                     </div>
 
-                  {/* JSON Preview */}
+                  {/* Output Preview */}
                   <div>
-                    <p className="text-xs font-medium text-gray-500 mb-2">JSON Output Preview:</p>
-                    <div className="bg-gray-900 rounded-lg p-4 overflow-auto h-[580px]">
-                      <pre className="text-xs text-green-400 font-mono">
-                        {data.json}
-                      </pre>
+                    <p className="text-xs font-medium text-gray-700 mb-2 flex items-center gap-2">
+                      <span className="w-2 h-2 bg-indigo-500 rounded-full"></span>
+                      {conversionMode === 'csv-to-json' ? 'JSON Output Preview' : 'CSV Output Preview'}
+                    </p>
+                    <div className="relative group">
+                      <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 rounded-xl p-5 overflow-auto min-h-[280px] max-h-[580px] h-[380px] border-2 border-indigo-100 shadow-inner">
+                        <pre className="text-xs font-mono text-indigo-900 leading-relaxed">
+                          {data.json}
+                        </pre>
+                      </div>
+                      {/* Copy Button */}
+                      <button
+                        onClick={handleCopy}
+                        className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-white border-2 border-indigo-200 hover:border-indigo-400 rounded-lg shadow-md hover:shadow-lg transition-all"
+                        title="Copy JSON"
+                      >
+                        <Copy className="w-4 h-4 text-indigo-600" />
+                      </button>
+                      
+                      {/* Copied notification */}
+                      {showCopied && (
+                        <div className="absolute top-16 right-3 px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg shadow-lg animate-bounce">
+                          ✓ Copied!
+                        </div>
+                      )}
                     </div>
                   </div>
                   </div>
