@@ -129,7 +129,7 @@ export default function CSVToJSONConverter() {
     const delimiter = getDelimiter();
     
     // Handle array of objects or object with data property
-    let items = Array.isArray(data) ? data : (data.data || [data]);
+    const items = Array.isArray(data) ? data : (data.data || [data]);
     
     if (items.length === 0) return '';
     

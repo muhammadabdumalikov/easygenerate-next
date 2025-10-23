@@ -81,7 +81,7 @@ export default function CSVToExcel() {
     let maxColumns = 0;
     
     // Extract all rows
-    worksheet.eachRow((row, rowNumber) => {
+    worksheet.eachRow((row) => {
       const rowData: string[] = [];
       row.eachCell({ includeEmpty: true }, (cell) => {
         const value = cell.value;

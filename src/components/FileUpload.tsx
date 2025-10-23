@@ -39,18 +39,18 @@ export default function FileUpload() {
     const MAX_FILES = 10; // Maximum number of files
 
     // Define common conversion format options
-    const formatOptions = [
-        { value: 'pdf', label: 'PDF' },
-        { value: 'docx', label: 'DOCX' },
-        { value: 'jpg', label: 'JPG' },
-        { value: 'png', label: 'PNG' },
-        { value: 'mp3', label: 'MP3' },
-        { value: 'mp4', label: 'MP4' },
-        { value: 'zip', label: 'ZIP' },
-        { value: 'txt', label: 'TXT' },
-        { value: 'csv', label: 'CSV' },
-        { value: 'json', label: 'JSON' },
-    ];
+    // const formatOptions = [
+    //     { value: 'pdf', label: 'PDF' },
+    //     { value: 'docx', label: 'DOCX' },
+    //     { value: 'jpg', label: 'JPG' },
+    //     { value: 'png', label: 'PNG' },
+    //     { value: 'mp3', label: 'MP3' },
+    //     { value: 'mp4', label: 'MP4' },
+    //     { value: 'zip', label: 'ZIP' },
+    //     { value: 'txt', label: 'TXT' },
+    //     { value: 'csv', label: 'CSV' },
+    //     { value: 'json', label: 'JSON' },
+    // ];
 
     const handleDragOver = useCallback((e: React.DragEvent) => {
         e.preventDefault();
