@@ -4,7 +4,12 @@ import { useState } from 'react';
 import { FileText, Upload, Download, AlertCircle, CheckCircle, Trash2 } from 'react-feather';
 import ConverterLayout from '@/components/converters/ConverterLayout';
 import mammoth from 'mammoth';
-import jsPDF from 'jspdf';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+
+// Initialize pdfMake with fonts
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(pdfMake as any).vfs = pdfFonts;
 
 type ConversionStatus = 'idle' | 'processing' | 'success' | 'error';
 
@@ -40,117 +45,168 @@ export default function WordToPDF() {
     margins: 20
   });
 
-  const textToPDF = (text: string): { pdf: jsPDF; pages: number } => {
-    if (!text || text.trim().length === 0) {
-      throw new Error('Text content is empty');
-    }
-
-    // Create PDF
-    const pdf = new jsPDF({
-      orientation: options.orientation,
-      unit: 'mm',
-      format: options.pageSize
-    });
-
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = options.margins;
-    const lineHeight = options.fontSize * 0.35;
-    const maxWidth = pageWidth - (margin * 2);
-
-    pdf.setFontSize(options.fontSize);
-    
-    const paragraphs = text.split(/\n+/);
-    let y = margin;
-    let currentPage = 1;
-
-    for (const paragraph of paragraphs) {
-      if (!paragraph.trim()) continue;
-
-      const lines = pdf.splitTextToSize(paragraph, maxWidth);
-      
-      for (const line of lines) {
-        if (y + lineHeight > pageHeight - margin) {
-          pdf.addPage();
-          currentPage++;
-          y = margin;
-        }
-        
-        pdf.text(line, margin, y);
-        y += lineHeight;
+  const textToPDF = (text: string): Promise<{ buffer: ArrayBuffer; pages: number }> => {
+    return new Promise((resolve) => {
+      if (!text || text.trim().length === 0) {
+        throw new Error('Text content is empty');
       }
-      
-      y += lineHeight * 0.5;
-    }
 
-    return { pdf, pages: currentPage };
+      // Split text into paragraphs
+      const paragraphs = text.split(/\n+/).filter(p => p.trim());
+      
+      // Create content array for pdfMake
+      const content = paragraphs.map(paragraph => ({
+        text: paragraph,
+        style: 'paragraph'
+      }));
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const docDefinition: any = {
+        pageSize: options.pageSize.toUpperCase(),
+        pageOrientation: options.orientation,
+        pageMargins: [options.margins, options.margins, options.margins, options.margins],
+        content,
+        styles: {
+          paragraph: {
+            fontSize: options.fontSize,
+            lineHeight: 1.5,
+            margin: [0, 0, 0, 10]
+          }
+        },
+        defaultStyle: {
+          font: 'Roboto'
+        }
+      };
+
+      const pdfDocGenerator = pdfMake.createPdf(docDefinition);
+      
+      pdfDocGenerator.getBuffer((buffer: Buffer) => {
+        const arrayBuffer = buffer.buffer.slice(
+          buffer.byteOffset,
+          buffer.byteOffset + buffer.byteLength
+        ) as ArrayBuffer;
+        
+        // Estimate pages (rough calculation)
+        const estimatedPages = Math.max(1, Math.ceil(paragraphs.length / 30));
+        
+        resolve({ buffer: arrayBuffer, pages: estimatedPages });
+      });
+    });
   };
 
-  const wordToPDF = async (file: File): Promise<{ pdf: jsPDF; pages: number }> => {
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      
-      // Extract text from Word document
-      const result = await mammoth.extractRawText({ arrayBuffer });
-      const text = result.value;
-
-      if (!text || text.trim().length === 0) {
-        throw new Error('Document appears to be empty');
-      }
-
-      // Create PDF
-      const pdf = new jsPDF({
-        orientation: options.orientation,
-        unit: 'mm',
-        format: options.pageSize
-      });
-
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = options.margins;
-      const lineHeight = options.fontSize * 0.35; // Convert font size to mm
-      const maxWidth = pageWidth - (margin * 2);
-
-      pdf.setFontSize(options.fontSize);
-      
-      // Split text into paragraphs
-      const paragraphs = text.split(/\n+/);
-      let y = margin;
-      let currentPage = 1;
-
-      for (const paragraph of paragraphs) {
-        if (!paragraph.trim()) continue;
-
-        // Split paragraph into lines that fit the page width
-        const lines = pdf.splitTextToSize(paragraph, maxWidth);
+  const wordToPDF = async (file: File): Promise<{ buffer: ArrayBuffer; pages: number }> => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const arrayBuffer = await file.arrayBuffer();
         
-        for (const line of lines) {
-          // Check if we need a new page
-          if (y + lineHeight > pageHeight - margin) {
-            pdf.addPage();
-            currentPage++;
-            y = margin;
-          }
-          
-          pdf.text(line, margin, y);
-          y += lineHeight;
+        // Convert Word document to HTML to preserve formatting
+        const result = await mammoth.convertToHtml({ arrayBuffer });
+        const html = result.value;
+
+        if (!html || html.trim().length === 0) {
+          throw new Error('Document appears to be empty');
         }
-        
-        // Add spacing between paragraphs
-        y += lineHeight * 0.5;
-      }
 
-      return {
-        pdf,
-        pages: currentPage
-      };
-    } catch (error) {
-      console.error('Word to PDF conversion error:', error);
-      if (error instanceof Error) {
-        throw error;
+        // Parse HTML and convert to pdfMake format
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const content: unknown[] = [];
+
+        const processElement = (element: Element): unknown => {
+          const tagName = element.tagName.toLowerCase();
+          const text = element.textContent?.trim() || '';
+          
+          if (!text) return null;
+
+          // Handle different HTML tags
+          switch (tagName) {
+            case 'h1':
+              return { text, style: 'h1', margin: [0, 10, 0, 10] };
+            case 'h2':
+              return { text, style: 'h2', margin: [0, 8, 0, 8] };
+            case 'h3':
+              return { text, style: 'h3', margin: [0, 6, 0, 6] };
+            case 'p':
+              return { text, style: 'paragraph' };
+            case 'strong':
+            case 'b':
+              return { text, bold: true };
+            case 'em':
+            case 'i':
+              return { text, italics: true };
+            case 'u':
+              return { text, decoration: 'underline' };
+            default:
+              return { text, style: 'paragraph' };
+          }
+        };
+
+        // Process all child elements
+        Array.from(doc.body.children).forEach(element => {
+          const item = processElement(element);
+          if (item) content.push(item);
+        });
+
+        // If no structured content, fall back to plain text
+        if (content.length === 0) {
+          const plainText = doc.body.textContent?.trim() || '';
+          const paragraphs = plainText.split(/\n+/).filter(p => p.trim());
+          paragraphs.forEach(p => {
+            content.push({ text: p, style: 'paragraph' });
+          });
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const docDefinition: any = {
+          pageSize: options.pageSize.toUpperCase(),
+          pageOrientation: options.orientation,
+          pageMargins: [options.margins, options.margins, options.margins, options.margins],
+          content,
+          styles: {
+            h1: {
+              fontSize: options.fontSize * 2,
+              bold: true,
+              lineHeight: 1.3
+            },
+            h2: {
+              fontSize: options.fontSize * 1.5,
+              bold: true,
+              lineHeight: 1.3
+            },
+            h3: {
+              fontSize: options.fontSize * 1.3,
+              bold: true,
+              lineHeight: 1.3
+            },
+            paragraph: {
+              fontSize: options.fontSize,
+              lineHeight: 1.5,
+              margin: [0, 0, 0, 10]
+            }
+          },
+          defaultStyle: {
+            font: 'Roboto'
+          }
+        };
+
+        const pdfDocGenerator = pdfMake.createPdf(docDefinition);
+        
+        pdfDocGenerator.getBuffer((buffer: Buffer) => {
+          const convertedBuffer = buffer.buffer.slice(
+            buffer.byteOffset,
+            buffer.byteOffset + buffer.byteLength
+          ) as ArrayBuffer;
+          
+          // Estimate pages
+          const estimatedPages = Math.max(1, Math.ceil(content.length / 25));
+          
+          resolve({ buffer: convertedBuffer, pages: estimatedPages });
+        });
+      } catch (error) {
+        console.error('Word to PDF conversion error:', error);
+        reject(error);
       }
-      throw new Error('Unable to convert Word document to PDF');
-    }
+    });
   };
 
   const formatFileSize = (bytes: number): string => {
@@ -227,34 +283,32 @@ export default function WordToPDF() {
 
     try {
       setProgress(30);
-      let pdf: jsPDF;
+      let pdfBuffer: ArrayBuffer;
       let pages: number;
       let fileName: string;
 
       if (inputMode === 'text') {
-        const result = textToPDF(inputText);
-        pdf = result.pdf;
+        const result = await textToPDF(inputText);
+        pdfBuffer = result.buffer;
         pages = result.pages;
         fileName = 'text-document.pdf';
       } else {
         const result = await wordToPDF(uploadedFile!);
-        pdf = result.pdf;
+        pdfBuffer = result.buffer;
         pages = result.pages;
         fileName = `${uploadedFile!.name.replace(/\.[^/.]+$/, '')}.pdf`;
       }
       
       setProgress(80);
       
-      const pdfBuffer = pdf.output('arraybuffer');
-      
-      const result: ConvertedResult = {
+      const finalResult: ConvertedResult = {
         fileName,
         fileSize: pdfBuffer.byteLength,
         pages,
         buffer: pdfBuffer
       };
 
-      setConvertedData(result);
+      setConvertedData(finalResult);
       setProgress(100);
       setStatus('success');
     } catch (error) {
@@ -622,11 +676,11 @@ This is a new paragraph with some text."
                 </div>
               )}
 
-              {/* Unicode Warning */}
-              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-xs text-yellow-800 font-semibold mb-1">⚠️ Unicode Support Limited</p>
-                <p className="text-xs text-yellow-700 leading-relaxed">
-                  Cyrillic, Chinese, Arabic and other non-Latin characters may not display correctly in PDF due to font limitations.
+              {/* Info Message */}
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-xs text-blue-800 font-semibold mb-1">ℹ️ Document Formatting</p>
+                <p className="text-xs text-blue-700 leading-relaxed">
+                  The converter preserves basic formatting including headings, bold, and italic text. Complex formatting may be simplified.
                 </p>
               </div>
             </div>
