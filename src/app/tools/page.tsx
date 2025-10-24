@@ -66,6 +66,73 @@ const toolGroups: ToolGroup[] = [
         badge: 'Popular',
         href: '/tools/csv-to-json',
         enabled: true
+      },
+      {
+        id: 'csv-to-html',
+        name: 'CSV',
+        to: 'HTML Table',
+        description: 'Generate HTML tables with custom styling',
+        badge: 'New',
+        href: '/tools/csv-to-html',
+        enabled: true
+      },
+      {
+        id: 'csv-to-markdown',
+        name: 'CSV',
+        to: 'Markdown',
+        description: 'Create Markdown tables for documentation',
+        badge: 'New',
+        href: '/tools/csv-to-markdown',
+        enabled: true
+      },
+      {
+        id: 'csv-to-sql',
+        name: 'CSV',
+        to: 'SQL',
+        description: 'Generate SQL INSERT statements for databases',
+        badge: 'New',
+        href: '/tools/csv-to-sql',
+        enabled: true
+      },
+      {
+        id: 'csv-to-xml',
+        name: 'CSV',
+        to: 'XML',
+        description: 'Convert CSV to XML format',
+        href: '/tools/csv-to-xml',
+        enabled: false
+      },
+      {
+        id: 'csv-to-yaml',
+        name: 'CSV',
+        to: 'YAML',
+        description: 'Convert CSV to YAML configuration format',
+        href: '/tools/csv-to-yaml',
+        enabled: false
+      },
+      {
+        id: 'csv-to-pdf',
+        name: 'CSV',
+        to: 'PDF',
+        description: 'Generate formatted PDF tables from CSV',
+        href: '/tools/csv-to-pdf',
+        enabled: false
+      },
+      {
+        id: 'csv-to-javascript',
+        name: 'CSV',
+        to: 'JavaScript',
+        description: 'Convert to JavaScript array/object format',
+        href: '/tools/csv-to-javascript',
+        enabled: false
+      },
+      {
+        id: 'csv-to-python',
+        name: 'CSV',
+        to: 'Python',
+        description: 'Generate Python dictionary or list format',
+        href: '/tools/csv-to-python',
+        enabled: false
       }
     ]
   },
@@ -83,6 +150,53 @@ const toolGroups: ToolGroup[] = [
         to: 'Formatter',
         description: 'Beautify, minify, and validate JSON data',
         href: '/tools/json-formatter',
+        enabled: true
+      }
+    ]
+  },
+  {
+    id: 'excel',
+    source: 'Excel',
+    description: 'Excel/spreadsheet conversion tools',
+    icon: FileText,
+    iconColor: 'text-green-600',
+    iconBg: 'bg-green-100',
+    tools: [
+      {
+        id: 'excel-to-csv',
+        name: 'Excel',
+        to: 'CSV',
+        description: 'Convert Excel spreadsheets to CSV format',
+        badge: 'New',
+        href: '/tools/csv-to-excel?mode=excel-to-csv',
+        enabled: true
+      },
+      {
+        id: 'excel-to-pdf',
+        name: 'Excel',
+        to: 'PDF',
+        description: 'Convert Excel spreadsheets to PDF documents',
+        badge: 'New',
+        href: '/tools/excel-to-pdf',
+        enabled: true
+      }
+    ]
+  },
+  {
+    id: 'word',
+    source: 'Word',
+    description: 'Word document conversion tools',
+    icon: FileText,
+    iconColor: 'text-blue-600',
+    iconBg: 'bg-blue-100',
+    tools: [
+      {
+        id: 'word-to-pdf',
+        name: 'Word',
+        to: 'PDF',
+        description: 'Convert Word documents to PDF format',
+        badge: 'New',
+        href: '/tools/word-to-pdf',
         enabled: true
       }
     ]
@@ -206,7 +320,7 @@ const toolGroups: ToolGroup[] = [
 ];
 
 export default function ToolsPage() {
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(['csv', 'json']);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(['csv', 'json', 'excel', 'word']);
   const [searchQuery, setSearchQuery] = useState('');
 
   const toggleGroup = (groupId: string) => {

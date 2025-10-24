@@ -23,12 +23,11 @@ export default function Header() {
           >
             Home
           </Link>
-          <Link 
-            href="/apis" 
-            className="text-gray-700 hover:text-indigo-600 transition-colors font-medium"
+          <span 
+            className="text-gray-400 cursor-not-allowed font-medium"
           >
             APIs
-          </Link>
+          </span>
           <Link 
             href="/pricings" 
             className="text-gray-700 hover:text-indigo-600 transition-colors font-medium"

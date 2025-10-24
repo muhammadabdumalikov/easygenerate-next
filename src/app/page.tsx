@@ -54,6 +54,61 @@ const popularTools = [
     enabled: true
   },
   {
+    id: 'csv-to-html',
+    name: 'CSV to HTML',
+    description: 'Generate HTML tables from CSV',
+    icon: Code,
+    iconColor: 'text-green-600',
+    iconBg: 'bg-green-100',
+    category: 'Data',
+    href: '/tools/csv-to-html',
+    enabled: true
+  },
+  {
+    id: 'csv-to-markdown',
+    name: 'CSV to Markdown',
+    description: 'Create Markdown tables for docs',
+    icon: FileText,
+    iconColor: 'text-purple-600',
+    iconBg: 'bg-purple-100',
+    category: 'Data',
+    href: '/tools/csv-to-markdown',
+    enabled: true
+  },
+  {
+    id: 'csv-to-sql',
+    name: 'CSV to SQL',
+    description: 'Generate SQL INSERT statements',
+    icon: Code,
+    iconColor: 'text-blue-600',
+    iconBg: 'bg-blue-100',
+    category: 'Data',
+    href: '/tools/csv-to-sql',
+    enabled: true
+  },
+  {
+    id: 'excel-to-pdf',
+    name: 'Excel to PDF',
+    description: 'Convert Excel spreadsheets to PDF',
+    icon: Table,
+    iconColor: 'text-green-600',
+    iconBg: 'bg-green-100',
+    category: 'Document',
+    href: '/tools/excel-to-pdf',
+    enabled: true
+  },
+  {
+    id: 'word-to-pdf',
+    name: 'Word to PDF',
+    description: 'Convert Word documents to PDF',
+    icon: FileText,
+    iconColor: 'text-blue-600',
+    iconBg: 'bg-blue-100',
+    category: 'Document',
+    href: '/tools/word-to-pdf',
+    enabled: true
+  },
+  {
     id: 'universal-converter',
     name: 'Universal Converter',
     description: 'Convert any file to any format - 300+ formats supported',

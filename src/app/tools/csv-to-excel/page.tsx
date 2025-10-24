@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import ConverterLayout from '@/components/converters/ConverterLayout';
-import { FileText, Download, Table, CheckCircle, AlertCircle, AlertTriangle, Upload, X } from 'react-feather';
+import { FileText, Download, Table, CheckCircle, AlertCircle, AlertTriangle, Upload, X, RefreshCw } from 'react-feather';
 import ExcelJS from 'exceljs';
 
 type ConversionStatus = 'idle' | 'processing' | 'success' | 'error';
@@ -25,10 +26,13 @@ interface ConvertedResult {
 }
 
 export default function CSVToExcel() {
+  const searchParams = useSearchParams();
+  const modeFromUrl = searchParams.get('mode') as 'csv-to-excel' | 'excel-to-csv' | null;
+  
   const [inputText, setInputText] = useState('');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [inputMode, setInputMode] = useState<'text' | 'file'>('text');
-  const [conversionMode, setConversionMode] = useState<'csv-to-excel' | 'excel-to-csv'>('csv-to-excel');
+  const [conversionMode, setConversionMode] = useState<'csv-to-excel' | 'excel-to-csv'>(modeFromUrl || 'csv-to-excel');
   const [status, setStatus] = useState<ConversionStatus>('idle');
   const [progress, setProgress] = useState(0);
   const [convertedData, setConvertedData] = useState<ConvertedResult | null>(null);
@@ -41,6 +45,13 @@ export default function CSVToExcel() {
     autoWidth: true,
     freezeHeader: true
   });
+
+  // Update conversion mode when URL param changes
+  useEffect(() => {
+    if (modeFromUrl && (modeFromUrl === 'csv-to-excel' || modeFromUrl === 'excel-to-csv')) {
+      setConversionMode(modeFromUrl);
+    }
+  }, [modeFromUrl]);
 
   // File size limits
   const MAX_INPUT_SIZE = 5 * 1024 * 1024; // 5MB input limit

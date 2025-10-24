@@ -1,0 +1,627 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { FileText, Upload, Download, Copy, RefreshCw, Trash2, Check, X, CheckCircle } from 'react-feather';
+import ConverterLayout from '@/components/converters/ConverterLayout';
+
+type ConversionStatus = 'idle' | 'processing' | 'success' | 'error';
+
+interface ConversionOptions {
+  delimiter: 'comma' | 'semicolon' | 'tab' | 'pipe';
+  hasHeaders: boolean;
+  alignment: 'left' | 'center' | 'right';
+}
+
+export default function CSVToMarkdown() {
+  const searchParams = useSearchParams();
+  const modeFromUrl = searchParams.get('mode') as 'csv-to-markdown' | 'markdown-to-csv' | null;
+
+  const [inputText, setInputText] = useState('');
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [inputMode, setInputMode] = useState<'text' | 'file'>('file');
+  const [status, setStatus] = useState<ConversionStatus>('idle');
+  const [markdownOutput, setMarkdownOutput] = useState<string>('');
+  const [showCopied, setShowCopied] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [conversionMode, setConversionMode] = useState<'csv-to-markdown' | 'markdown-to-csv'>(modeFromUrl || 'csv-to-markdown');
+  const [options, setOptions] = useState<ConversionOptions>({
+    delimiter: 'comma',
+    hasHeaders: true,
+    alignment: 'left'
+  });
+
+  useEffect(() => {
+    if (modeFromUrl && (modeFromUrl === 'csv-to-markdown' || modeFromUrl === 'markdown-to-csv')) {
+      setConversionMode(modeFromUrl);
+    }
+  }, [modeFromUrl]);
+
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+  const getDelimiter = (type: string): string => {
+    switch (type) {
+      case 'comma': return ',';
+      case 'semicolon': return ';';
+      case 'tab': return '\t';
+      case 'pipe': return '|';
+      default: return ',';
+    }
+  };
+
+  const parseCSV = (text: string, delimiter: string): string[][] => {
+    const lines = text.trim().split('\n');
+    return lines.map(line => {
+      return line.split(delimiter).map(cell => cell.trim());
+    });
+  };
+
+  const parseMarkdownTable = (markdown: string): string[][] => {
+    const lines = markdown.trim().split('\n');
+    const data: string[][] = [];
+    
+    for (const line of lines) {
+      // Skip empty lines
+      if (!line.trim()) continue;
+      
+      // Skip separator lines (e.g., |---|---|)
+      if (line.match(/^\|[\s\-\|]+\|$/)) continue;
+      
+      // Parse table rows
+      if (line.startsWith('|') && line.endsWith('|')) {
+        const cells = line
+          .slice(1, -1) // Remove leading and trailing |
+          .split('|')
+          .map(cell => cell.trim());
+        
+        if (cells.length > 0) {
+          data.push(cells);
+        }
+      }
+    }
+    
+    if (data.length === 0) {
+      throw new Error('No markdown table found');
+    }
+    
+    return data;
+  };
+
+  const csvToMarkdown = (csvText: string): string => {
+    const delimiter = getDelimiter(options.delimiter);
+    const rows = parseCSV(csvText, delimiter);
+    
+    if (rows.length === 0) return '';
+
+    let markdown = '';
+    const alignmentChar = options.alignment === 'left' ? ':--' : 
+                         options.alignment === 'center' ? ':-:' : '--:';
+
+    // Add header row
+    if (options.hasHeaders && rows.length > 0) {
+      markdown += '| ' + rows[0].join(' | ') + ' |\n';
+      
+      // Add alignment row
+      const alignmentRow = rows[0].map(() => alignmentChar).join(' | ');
+      markdown += '| ' + alignmentRow + ' |\n';
+      
+      // Add data rows
+      rows.slice(1).forEach(row => {
+        markdown += '| ' + row.join(' | ') + ' |\n';
+      });
+    } else {
+      // No headers - all rows are data
+      rows.forEach(row => {
+        markdown += '| ' + row.join(' | ') + ' |\n';
+      });
+    }
+
+    return markdown.trim();
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) processFile(file);
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    processFile(file);
+  };
+
+  const processFile = (file: File) => {
+    const fileName = file.name.toLowerCase();
+    const expectedExtensions = conversionMode === 'csv-to-markdown' ? ['.csv'] : ['.md', '.markdown'];
+    const isValidFile = expectedExtensions.some(ext => fileName.endsWith(ext));
+    
+    if (!isValidFile) {
+      alert(`Please select a valid ${conversionMode === 'csv-to-markdown' ? 'CSV' : 'Markdown'} file`);
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      alert(`File too large. Maximum size is ${formatFileSize(MAX_FILE_SIZE)}`);
+      return;
+    }
+
+    setUploadedFile(file);
+    setInputMode('file');
+    setStatus('idle');
+    setMarkdownOutput('');
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      handleConvert(content);
+    };
+    reader.readAsText(file);
+  };
+
+  const removeUploadedFile = () => {
+    setUploadedFile(null);
+    setMarkdownOutput('');
+    setStatus('idle');
+  };
+
+  const handleConvert = (content?: string) => {
+    const inputContent = content || inputText;
+    if (!inputContent.trim()) return;
+
+    setStatus('processing');
+    
+    try {
+      let result: string;
+      if (conversionMode === 'csv-to-markdown') {
+        result = csvToMarkdown(inputContent);
+      } else {
+        // Markdown to CSV conversion
+        const data = parseMarkdownTable(inputContent);
+        const delimiter = getDelimiter(options.delimiter);
+        result = data.map(row => row.join(delimiter)).join('\n');
+      }
+      setMarkdownOutput(result);
+      setStatus('success');
+    } catch (error) {
+      console.error('Conversion error:', error);
+      setStatus('error');
+    }
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(markdownOutput);
+    setShowCopied(true);
+    setTimeout(() => setShowCopied(false), 2000);
+  };
+
+  const handleDownload = () => {
+    const blob = new Blob([markdownOutput], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `converted_${Date.now()}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const loadSample = () => {
+    let sample: string;
+    if (conversionMode === 'csv-to-markdown') {
+      sample = `Product,Category,Price,Stock
+Laptop,Electronics,999.99,45
+Mouse,Electronics,29.99,150
+Keyboard,Electronics,79.99,89
+Monitor,Electronics,299.99,34`;
+    } else {
+      sample = `| Product | Category | Price | Stock |
+|---------|----------|-------|-------|
+| Laptop  | Electronics | 999.99 | 45 |
+| Mouse   | Electronics | 29.99 | 150 |
+| Keyboard | Electronics | 79.99 | 89 |
+| Monitor | Electronics | 299.99 | 34 |`;
+    }
+    setInputText(sample);
+    setUploadedFile(null);
+    setInputMode('text');
+    handleConvert(sample);
+  };
+
+  const clearAll = () => {
+    setInputText('');
+    setUploadedFile(null);
+    setMarkdownOutput('');
+    setStatus('idle');
+  };
+
+  // Convert markdown to HTML for preview
+  const renderMarkdownTable = (markdown: string): string => {
+    const lines = markdown.split('\n').filter(line => line.trim());
+    if (lines.length < 2) return '';
+
+    let html = '<table border="1" style="border-collapse: collapse; width: 100%;">\n';
+    
+    // Header row
+    const headerCells = lines[0].split('|').map(cell => cell.trim()).filter(cell => cell);
+    html += '  <thead>\n    <tr>\n';
+    headerCells.forEach(cell => {
+      html += `      <th style="padding: 8px; text-align: left; background-color: #f2f2f2;">${cell}</th>\n`;
+    });
+    html += '    </tr>\n  </thead>\n';
+
+    // Data rows (skip alignment row)
+    html += '  <tbody>\n';
+    lines.slice(2).forEach(line => {
+      const cells = line.split('|').map(cell => cell.trim()).filter(cell => cell);
+      html += '    <tr>\n';
+      cells.forEach(cell => {
+        html += `      <td style="padding: 8px; border: 1px solid #ddd;">${cell}</td>\n`;
+      });
+      html += '    </tr>\n';
+    });
+    html += '  </tbody>\n</table>';
+
+    return html;
+  };
+
+  return (
+    <ConverterLayout
+      title={conversionMode === 'csv-to-markdown' ? 'CSV to Markdown Table Converter' : 'Markdown to CSV Converter'}
+      description={conversionMode === 'csv-to-markdown' 
+        ? 'Convert CSV files to Markdown tables. Perfect for documentation, README files, and GitHub.'
+        : 'Convert Markdown tables to CSV format. Extract data from Markdown tables into spreadsheet format.'
+      }
+      icon={<FileText className="w-8 h-8 text-white" />}
+      badge="Free"
+    >
+      {/* Conversion Mode Toggle */}
+      <div className="mb-6 flex items-center justify-center">
+        <div className="inline-flex items-center bg-white rounded-xl p-1.5 border-2 border-gray-200 shadow-sm">
+          <button
+            onClick={() => {
+              setConversionMode('csv-to-markdown');
+              setInputText('');
+              setUploadedFile(null);
+              setMarkdownOutput('');
+              setStatus('idle');
+            }}
+            className={`px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 ${
+              conversionMode === 'csv-to-markdown'
+                ? 'bg-gradient-to-r from-purple-600 to-violet-600 text-white shadow-md'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            CSV → Markdown
+          </button>
+          <button
+            onClick={() => {
+              setConversionMode('markdown-to-csv');
+              setInputText('');
+              setUploadedFile(null);
+              setMarkdownOutput('');
+              setStatus('idle');
+            }}
+            className={`px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 ${
+              conversionMode === 'markdown-to-csv'
+                ? 'bg-gradient-to-r from-purple-600 to-violet-600 text-white shadow-md'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            Markdown → CSV
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Left Column: Input & Output (3 columns) */}
+        <div className="lg:col-span-3 space-y-6">
+          {/* Input & Output Side by Side */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left: Input Area */}
+            <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  {conversionMode === 'csv-to-markdown' ? (
+                    <FileText className="w-5 h-5 text-indigo-600" />
+                  ) : (
+                    <FileText className="w-5 h-5 text-green-600" />
+                  )}
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {conversionMode === 'csv-to-markdown' ? 'CSV' : 'Markdown'} Input
+                  </h3>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={loadSample}
+                    className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium transition-colors"
+                  >
+                    Load Sample
+                  </button>
+                </div>
+              </div>
+
+            {/* File Upload Area */}
+            <div className="mb-4 min-h-[400px]">
+              {!uploadedFile ? (
+                <div 
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={`border-2 border-dashed rounded-lg text-center transition-colors p-12 h-[400px] flex items-center justify-center ${
+                    isDragging 
+                      ? 'border-indigo-500 bg-indigo-50' 
+                      : 'border-gray-300 hover:border-indigo-400'
+                  }`}
+                >
+                  <input
+                    type="file"
+                    accept={conversionMode === 'csv-to-markdown' ? '.csv' : '.md,.markdown'}
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    id="file-upload"
+                  />
+                  <label
+                    htmlFor="file-upload"
+                    className="cursor-pointer flex flex-col items-center gap-2"
+                  >
+                    <Upload className={`w-16 h-16 ${isDragging ? 'text-indigo-600' : 'text-gray-400'}`} />
+                    <p className={`font-medium text-lg ${isDragging ? 'text-indigo-600' : 'text-gray-600'}`}>
+                      {isDragging 
+                        ? `Drop your ${conversionMode === 'csv-to-markdown' ? 'CSV' : 'Markdown'} file here` 
+                        : `Click to upload ${conversionMode === 'csv-to-markdown' ? 'CSV' : 'Markdown'} file`
+                      }
+                    </p>
+                    <p className="text-gray-500 text-base">or drag and drop</p>
+                    <p className="text-xs text-gray-400">Max size: {formatFileSize(MAX_FILE_SIZE)}</p>
+                  </label>
+                </div>
+              ) : (
+                <div className="h-[400px] flex items-center justify-center">
+                  <div className="w-full max-w-2xl">
+                    {/* Clean File Card */}
+                    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                      {/* File Content */}
+                      <div className="p-8">
+                        {/* Success Badge */}
+                        <div className="flex items-center justify-center mb-6">
+                          <div className="flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-full">
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            <span className="text-sm font-semibold text-green-700">Ready to Convert</span>
+                          </div>
+                        </div>
+
+                        {/* File Display */}
+                        <div className="flex items-center gap-6 mb-8">
+                          {/* Large File Icon */}
+                          <div className="flex-shrink-0">
+                            <div className="w-24 h-24 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-2xl flex items-center justify-center">
+                              <FileText className="text-indigo-600 w-12 h-12" />
+                            </div>
+                          </div>
+
+                          {/* File Info */}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-2xl font-bold text-gray-900 mb-3 truncate" title={uploadedFile.name}>
+                              {uploadedFile.name}
+                            </h3>
+                            <div className="flex items-center gap-4 text-sm text-gray-600">
+                              <span className="font-medium">{formatFileSize(uploadedFile.size)}</span>
+                              <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
+                              <span className="font-medium">CSV File</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2">
+                          <label className="flex-1 cursor-pointer">
+                            <input
+                              type="file"
+                              accept=".csv"
+                              onChange={handleFileUpload}
+                              className="hidden"
+                            />
+                            <div className="w-full px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow">
+                              <Upload className="w-4 h-4" />
+                              Choose Different File
+                            </div>
+                          </label>
+                          <button
+                            onClick={removeUploadedFile}
+                            className="px-3 py-2.5 bg-white border border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-600 rounded-lg transition-all flex items-center justify-center"
+                            title="Remove file"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Text Input Area - Only show for CSV when no file is uploaded */}
+            {!uploadedFile && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Or paste your {conversionMode === 'csv-to-markdown' ? 'CSV' : 'Markdown'} data directly:
+                </label>
+                <textarea
+                  value={inputText}
+                  onChange={(e) => {
+                    setInputText(e.target.value);
+                    setStatus('idle');
+                  }}
+                  placeholder={conversionMode === 'csv-to-markdown' 
+                    ? "Product,Category,Price,Stock\nLaptop,Electronics,999.99,45\nMouse,Electronics,29.99,150"
+                    : "| Product | Category | Price |\n|---------|----------|-------|\n| Laptop | Electronics | 999.99 |"
+                  }
+                  className="w-full h-32 px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 text-sm font-mono text-gray-900 bg-gray-50 resize-none transition-colors"
+                />
+              </div>
+            )}
+            </div>
+
+            {/* Right: Output Area */}
+            <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  {conversionMode === 'csv-to-markdown' ? (
+                    <FileText className="w-5 h-5 text-indigo-600" />
+                  ) : (
+                    <FileText className="w-5 h-5 text-green-600" />
+                  )}
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {conversionMode === 'csv-to-markdown' ? 'Markdown' : 'CSV'} Output
+                  </h3>
+                </div>
+                {markdownOutput && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleCopy}
+                      className="px-3 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors flex items-center gap-1"
+                    >
+                      {showCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                      {showCopied ? 'Copied!' : 'Copy'}
+                    </button>
+                    <button
+                      onClick={handleDownload}
+                      className="px-3 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center gap-1"
+                    >
+                      <Download className="w-3 h-3" />
+                      Download
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="min-h-[400px]">
+                {markdownOutput ? (
+                  <div>
+                    {/* Markdown Code */}
+                    <div className="mb-4">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-2">Markdown Code:</h4>
+                      <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-xs">
+                        <code>{markdownOutput}</code>
+                      </pre>
+                    </div>
+                    
+                    {/* Preview */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-700 mb-2">Preview:</h4>
+                      <div 
+                        className="border border-gray-200 rounded-lg p-4 overflow-x-auto"
+                        dangerouslySetInnerHTML={{ __html: renderMarkdownTable(markdownOutput) }}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-gray-400">
+                    <FileText className="w-16 h-16 mx-auto mb-3 opacity-50" />
+                    <p>Markdown output will appear here</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Settings */}
+        <div className="lg:col-span-1 space-y-6">
+          <div className="sticky top-24">
+            <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-md hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-2 mb-5 pb-4 border-b border-gray-200">
+                <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center shadow-sm">
+                  <FileText className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-base font-bold text-gray-900">Settings</h3>
+              </div>
+
+              <div className="space-y-5">
+                {/* Delimiter */}
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-800">Delimiter</label>
+                  <select
+                    value={options.delimiter}
+                    onChange={(e) => setOptions({...options, delimiter: e.target.value as any})}
+                    className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 text-sm"
+                  >
+                    <option value="comma">Comma (,)</option>
+                    <option value="semicolon">Semicolon (;)</option>
+                    <option value="tab">Tab</option>
+                    <option value="pipe">Pipe (|)</option>
+                  </select>
+                </div>
+
+                {/* Has Headers */}
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold text-gray-800">First row as headers</label>
+                  <button
+                    onClick={() => setOptions({...options, hasHeaders: !options.hasHeaders})}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      options.hasHeaders ? 'bg-purple-600' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        options.hasHeaders ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Alignment */}
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-800">Column Alignment</label>
+                  <select
+                    value={options.alignment}
+                    onChange={(e) => setOptions({...options, alignment: e.target.value as any})}
+                    className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 text-sm"
+                  >
+                    <option value="left">Left</option>
+                    <option value="center">Center</option>
+                    <option value="right">Right</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Convert Button */}
+              {inputText.trim() && !uploadedFile && (
+                <button
+                  onClick={() => handleConvert()}
+                  className="w-full mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                >
+                  <FileText className="w-5 h-5" />
+                  Convert to Markdown
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </ConverterLayout>
+  );
+}
+

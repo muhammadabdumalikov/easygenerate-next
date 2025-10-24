@@ -7,11 +7,8 @@ const nextConfig: NextConfig = {
   // Optimize for production
   compress: true,
   
-  // Enable experimental features for better performance
-  experimental: {
-    // Enable server components
-    serverComponentsExternalPackages: ['exceljs'],
-  },
+  // External packages for server components
+  serverExternalPackages: ['exceljs'],
   
   // Image optimization
   images: {
