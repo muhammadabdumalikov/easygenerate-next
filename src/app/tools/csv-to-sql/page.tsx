@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Database, Upload, Download, Copy, RefreshCw, Trash2, FileText, Check, CheckCircle, X } from 'react-feather';
+import { Database, Upload, Download, Copy, FileText, Check, CheckCircle } from 'react-feather';
 import ConverterLayout from '@/components/converters/ConverterLayout';
 
-type ConversionStatus = 'idle' | 'processing' | 'success' | 'error';
 
 interface ConversionOptions {
   delimiter: 'comma' | 'semicolon' | 'tab' | 'pipe';
@@ -17,14 +16,14 @@ interface ConversionOptions {
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
-export default function CSVToSQL() {
+function CSVToSQLContent() {
   const searchParams = useSearchParams();
   const modeFromUrl = searchParams.get('mode') as 'csv-to-sql' | 'sql-to-csv' | null;
 
   const [inputText, setInputText] = useState('');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [inputMode, setInputMode] = useState<'text' | 'file'>('text');
-  const [status, setStatus] = useState<ConversionStatus>('idle');
+  const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
   const [sqlOutput, setSqlOutput] = useState<string>('');
   const [showCopied, setShowCopied] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -223,7 +222,7 @@ export default function CSVToSQL() {
     sql += `-- Generated: ${new Date().toISOString()}\n\n`;
 
     // Create table statement
-    sql += generateCreateTable(columnNames, rows);
+    sql += generateCreateTable(columnNames);
     sql += '\n\n';
 
     // Get data rows
@@ -265,7 +264,7 @@ export default function CSVToSQL() {
     return sql.trim();
   };
 
-  const generateCreateTable = (columns: string[], rows: string[][]): string => {
+  const generateCreateTable = (columns: string[]): string => {
     let sql = `CREATE TABLE IF NOT EXISTS ${options.tableName} (\n`;
     
     columns.forEach((col, idx) => {
@@ -339,12 +338,6 @@ INSERT INTO products (Product, Category, Price, Stock) VALUES ('Monitor', 'Elect
     handleConvert(sample);
   };
 
-  const clearAll = () => {
-    setInputText('');
-    setUploadedFile(null);
-    setSqlOutput('');
-    setStatus('idle');
-  };
 
   return (
     <ConverterLayout
@@ -607,7 +600,7 @@ INSERT INTO products (Product, Category, Price, Stock) VALUES ('Monitor', 'Elect
                   <label className="text-sm font-semibold text-gray-800">Database Type</label>
                   <select
                     value={options.databaseType}
-                    onChange={(e) => setOptions({...options, databaseType: e.target.value as any})}
+                    onChange={(e) => setOptions({...options, databaseType: e.target.value as 'mysql' | 'postgresql' | 'sqlite'})}
                     className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
                   >
                     <option value="mysql">MySQL</option>
@@ -633,7 +626,7 @@ INSERT INTO products (Product, Category, Price, Stock) VALUES ('Monitor', 'Elect
                   <label className="text-sm font-semibold text-gray-800">Delimiter</label>
                   <select
                     value={options.delimiter}
-                    onChange={(e) => setOptions({...options, delimiter: e.target.value as any})}
+                    onChange={(e) => setOptions({...options, delimiter: e.target.value as 'comma' | 'semicolon' | 'tab'})}
                     className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
                   >
                     <option value="comma">Comma (,)</option>
@@ -690,6 +683,14 @@ INSERT INTO products (Product, Category, Price, Stock) VALUES ('Monitor', 'Elect
         </div>
       </div>
     </ConverterLayout>
+  );
+}
+
+export default function CSVToSQL() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CSVToSQLContent />
+    </Suspense>
   );
 }
 

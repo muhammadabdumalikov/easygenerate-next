@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { FileText, Upload, Download, RefreshCw, Trash2, AlertCircle, CheckCircle, Table, X } from 'react-feather';
+import { FileText, Upload, Download, AlertCircle, CheckCircle, Table, Trash2 } from 'react-feather';
 import ConverterLayout from '@/components/converters/ConverterLayout';
 import ExcelJS from 'exceljs';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 
 // Initialize pdfMake with fonts
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (pdfMake as any).vfs = pdfFonts;
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -60,10 +61,10 @@ export default function ExcelToPDF() {
       // Extract data with proper encoding handling
       const data: string[][] = [];
       
-      worksheet.eachRow((row, rowNumber) => {
+      worksheet.eachRow((row) => {
         const rowData: string[] = [];
         
-        row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+        row.eachCell({ includeEmpty: true }, (cell) => {
           const value = cell.value;
           let cellValue = '';
           
@@ -93,6 +94,7 @@ export default function ExcelToPDF() {
       const title = worksheet.name || 'Sheet1';
 
       // Create pdfMake document definition
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const docDefinition: any = {
         pageSize: options.pageSize.toUpperCase(),
         pageOrientation: options.orientation,
@@ -144,10 +146,10 @@ export default function ExcelToPDF() {
       };
 
       // Generate PDF
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         const pdfDocGenerator = pdfMake.createPdf(docDefinition);
         
-        pdfDocGenerator.getBuffer((buffer: any) => {
+        pdfDocGenerator.getBuffer((buffer: Uint8Array) => {
           // Estimate pages (pdfMake doesn't provide exact page count easily)
           const estimatedPages = Math.ceil(data.length / 30);
           
@@ -155,7 +157,7 @@ export default function ExcelToPDF() {
           const arrayBuffer = buffer.buffer.slice(
             buffer.byteOffset, 
             buffer.byteOffset + buffer.byteLength
-          );
+          ) as ArrayBuffer;
           
           resolve({
             buffer: arrayBuffer,
@@ -540,7 +542,7 @@ export default function ExcelToPDF() {
                   <label className="text-sm font-semibold text-gray-800">Page Size</label>
                   <select
                     value={options.pageSize}
-                    onChange={(e) => setOptions({...options, pageSize: e.target.value as any})}
+                    onChange={(e) => setOptions({...options, pageSize: e.target.value as 'a4' | 'letter' | 'legal'})}
                     className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 text-sm"
                   >
                     <option value="a4">A4</option>
@@ -554,7 +556,7 @@ export default function ExcelToPDF() {
                   <label className="text-sm font-semibold text-gray-800">Orientation</label>
                   <select
                     value={options.orientation}
-                    onChange={(e) => setOptions({...options, orientation: e.target.value as any})}
+                    onChange={(e) => setOptions({...options, orientation: e.target.value as 'portrait' | 'landscape'})}
                     className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 text-sm"
                   >
                     <option value="portrait">Portrait</option>

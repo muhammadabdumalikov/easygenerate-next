@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { FileText, Upload, Download, Copy, RefreshCw, Trash2, Check, X, CheckCircle } from 'react-feather';
+import { FileText, Upload, Download, Copy, Check, X, CheckCircle } from 'react-feather';
 import ConverterLayout from '@/components/converters/ConverterLayout';
 
-type ConversionStatus = 'idle' | 'processing' | 'success' | 'error';
 
 interface ConversionOptions {
   delimiter: 'comma' | 'semicolon' | 'tab' | 'pipe';
@@ -13,14 +12,13 @@ interface ConversionOptions {
   alignment: 'left' | 'center' | 'right';
 }
 
-export default function CSVToMarkdown() {
+function CSVToMarkdownContent() {
   const searchParams = useSearchParams();
   const modeFromUrl = searchParams.get('mode') as 'csv-to-markdown' | 'markdown-to-csv' | null;
 
   const [inputText, setInputText] = useState('');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [inputMode, setInputMode] = useState<'text' | 'file'>('file');
-  const [status, setStatus] = useState<ConversionStatus>('idle');
+  const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
   const [markdownOutput, setMarkdownOutput] = useState<string>('');
   const [showCopied, setShowCopied] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -164,7 +162,6 @@ export default function CSVToMarkdown() {
     }
 
     setUploadedFile(file);
-    setInputMode('file');
     setStatus('idle');
     setMarkdownOutput('');
 
@@ -242,16 +239,9 @@ Monitor,Electronics,299.99,34`;
     }
     setInputText(sample);
     setUploadedFile(null);
-    setInputMode('text');
     handleConvert(sample);
   };
 
-  const clearAll = () => {
-    setInputText('');
-    setUploadedFile(null);
-    setMarkdownOutput('');
-    setStatus('idle');
-  };
 
   // Convert markdown to HTML for preview
   const renderMarkdownTable = (markdown: string): string => {
@@ -565,7 +555,7 @@ Monitor,Electronics,299.99,34`;
                   <label className="text-sm font-semibold text-gray-800">Delimiter</label>
                   <select
                     value={options.delimiter}
-                    onChange={(e) => setOptions({...options, delimiter: e.target.value as any})}
+                    onChange={(e) => setOptions({...options, delimiter: e.target.value as 'comma' | 'semicolon' | 'tab' | 'pipe'})}
                     className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 text-sm"
                   >
                     <option value="comma">Comma (,)</option>
@@ -597,7 +587,7 @@ Monitor,Electronics,299.99,34`;
                   <label className="text-sm font-semibold text-gray-800">Column Alignment</label>
                   <select
                     value={options.alignment}
-                    onChange={(e) => setOptions({...options, alignment: e.target.value as any})}
+                    onChange={(e) => setOptions({...options, alignment: e.target.value as 'left' | 'center' | 'right'})}
                     className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 text-sm"
                   >
                     <option value="left">Left</option>
@@ -622,6 +612,14 @@ Monitor,Electronics,299.99,34`;
         </div>
       </div>
     </ConverterLayout>
+  );
+}
+
+export default function CSVToMarkdown() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CSVToMarkdownContent />
+    </Suspense>
   );
 }
 

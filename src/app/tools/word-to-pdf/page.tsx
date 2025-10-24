@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FileText, Upload, Download, RefreshCw, Trash2, AlertCircle, CheckCircle } from 'react-feather';
+import { FileText, Upload, Download, AlertCircle, CheckCircle, Trash2 } from 'react-feather';
 import ConverterLayout from '@/components/converters/ConverterLayout';
 import mammoth from 'mammoth';
 import jsPDF from 'jspdf';
@@ -59,7 +59,6 @@ export default function WordToPDF() {
       const margin = options.margins;
       const lineHeight = options.fontSize * 0.35; // Convert font size to mm
       const maxWidth = pageWidth - (margin * 2);
-      const maxHeight = pageHeight - (margin * 2);
 
       pdf.setFontSize(options.fontSize);
       
@@ -417,7 +416,7 @@ export default function WordToPDF() {
                   <label className="text-sm font-semibold text-gray-800">Page Size</label>
                   <select
                     value={options.pageSize}
-                    onChange={(e) => setOptions({...options, pageSize: e.target.value as any})}
+                    onChange={(e) => setOptions({...options, pageSize: e.target.value as 'a4' | 'letter' | 'legal'})}
                     className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
                   >
                     <option value="a4">A4</option>
@@ -431,7 +430,7 @@ export default function WordToPDF() {
                   <label className="text-sm font-semibold text-gray-800">Orientation</label>
                   <select
                     value={options.orientation}
-                    onChange={(e) => setOptions({...options, orientation: e.target.value as any})}
+                    onChange={(e) => setOptions({...options, orientation: e.target.value as 'portrait' | 'landscape'})}
                     className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
                   >
                     <option value="portrait">Portrait</option>

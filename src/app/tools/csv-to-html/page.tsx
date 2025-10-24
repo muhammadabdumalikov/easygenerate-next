@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Table, Upload, Download, Copy, RefreshCw, Trash2, FileText, Check, X, CheckCircle } from 'react-feather';
+import { Table, Upload, Download, Copy, FileText, Check, X, CheckCircle } from 'react-feather';
 import ConverterLayout from '@/components/converters/ConverterLayout';
 
-type ConversionStatus = 'idle' | 'processing' | 'success' | 'error';
 
 interface ConversionOptions {
   delimiter: 'comma' | 'semicolon' | 'tab' | 'pipe';
@@ -15,14 +14,13 @@ interface ConversionOptions {
   responsive: boolean;
 }
 
-export default function CSVToHTML() {
+function CSVToHTMLContent() {
   const searchParams = useSearchParams();
   const modeFromUrl = searchParams.get('mode') as 'csv-to-html' | 'html-to-csv' | null;
 
   const [inputText, setInputText] = useState('');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [inputMode, setInputMode] = useState<'text' | 'file'>('file');
-  const [status, setStatus] = useState<ConversionStatus>('idle');
+  const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
   const [htmlOutput, setHtmlOutput] = useState<string>('');
   const [showCopied, setShowCopied] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -221,8 +219,6 @@ export default function CSVToHTML() {
     }
 
     setUploadedFile(file);
-    setInputMode('file');
-    setStatus('idle');
     setHtmlOutput('');
 
     const reader = new FileReader();
@@ -313,16 +309,9 @@ Monitor,Electronics,299.99,34`;
     }
     setInputText(sample);
     setUploadedFile(null);
-    setInputMode('text');
     handleConvert(sample);
   };
 
-  const clearAll = () => {
-    setInputText('');
-    setUploadedFile(null);
-    setHtmlOutput('');
-    setStatus('idle');
-  };
 
   return (
     <ConverterLayout
@@ -602,7 +591,7 @@ Monitor,Electronics,299.99,34`;
                   <label className="text-sm font-semibold text-gray-800">Delimiter</label>
                   <select
                     value={options.delimiter}
-                    onChange={(e) => setOptions({...options, delimiter: e.target.value as any})}
+                    onChange={(e) => setOptions({...options, delimiter: e.target.value as 'comma' | 'semicolon' | 'tab'})}
                     className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 text-sm"
                   >
                     <option value="comma">Comma (,)</option>
@@ -696,6 +685,14 @@ Monitor,Electronics,299.99,34`;
         </div>
       </div>
     </ConverterLayout>
+  );
+}
+
+export default function CSVToHTML() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CSVToHTMLContent />
+    </Suspense>
   );
 }
 

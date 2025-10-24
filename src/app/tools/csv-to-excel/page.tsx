@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ConverterLayout from '@/components/converters/ConverterLayout';
-import { FileText, Download, Table, CheckCircle, AlertCircle, AlertTriangle, Upload, X, RefreshCw } from 'react-feather';
+import { FileText, Download, Table, CheckCircle, AlertCircle, AlertTriangle, Upload, X } from 'react-feather';
 import ExcelJS from 'exceljs';
 
 type ConversionStatus = 'idle' | 'processing' | 'success' | 'error';
@@ -25,7 +25,7 @@ interface ConvertedResult {
   buffer?: ArrayBuffer;
 }
 
-export default function CSVToExcel() {
+function CSVToExcelContent() {
   const searchParams = useSearchParams();
   const modeFromUrl = searchParams.get('mode') as 'csv-to-excel' | 'excel-to-csv' | null;
   
@@ -1114,6 +1114,14 @@ Coffee Maker,Appliances,89.99,56`;
         </div>
       </div>
     </ConverterLayout>
+  );
+}
+
+export default function CSVToExcel() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CSVToExcelContent />
+    </Suspense>
   );
 }
 
