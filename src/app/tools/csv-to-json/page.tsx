@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { FileText, Code, Copy } from 'react-feather';
 import ConverterLayout from '@/components/converters/ConverterLayout';
 import OptionsPanel, { OptionConfig } from '@/components/converters/OptionsPanel';
@@ -13,13 +14,16 @@ interface ConvertedResult {
   size: number;
 }
 
-export default function CSVToJSONConverter() {
+function CSVToJSONContent() {
+  const searchParams = useSearchParams();
+  const modeFromUrl = searchParams.get('mode') as 'csv-to-json' | 'json-to-csv' | null;
+
   const [inputText, setInputText] = useState('');
   const [status, setStatus] = useState<ConversionStatus>('idle');
   const [progress, setProgress] = useState(0);
   const [convertedData, setConvertedData] = useState<ConvertedResult | null>(null);
   const [showCopied, setShowCopied] = useState(false);
-  const [conversionMode, setConversionMode] = useState<'csv-to-json' | 'json-to-csv'>('csv-to-json');
+  const [conversionMode, setConversionMode] = useState<'csv-to-json' | 'json-to-csv'>(modeFromUrl || 'csv-to-json');
   const [options, setOptions] = useState({
     delimiter: 'comma',
     includeHeaders: true,
@@ -27,6 +31,12 @@ export default function CSVToJSONConverter() {
     arrayFormat: 'nested',
     skipEmptyLines: true
   });
+
+  useEffect(() => {
+    if (modeFromUrl && (modeFromUrl === 'csv-to-json' || modeFromUrl === 'json-to-csv')) {
+      setConversionMode(modeFromUrl);
+    }
+  }, [modeFromUrl]);
 
   const optionConfigs: OptionConfig[] = [
     {
@@ -519,6 +529,14 @@ Bob Johnson,bob@example.com,35,Chicago`;
         </div>
       </div>
     </ConverterLayout>
+  );
+}
+
+export default function CSVToJSONConverter() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CSVToJSONContent />
+    </Suspense>
   );
 }
 

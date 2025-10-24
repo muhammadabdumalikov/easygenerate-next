@@ -77,6 +77,15 @@ const toolGroups: ToolGroup[] = [
         enabled: true
       },
       {
+        id: 'html-to-csv',
+        name: 'HTML',
+        to: 'CSV',
+        description: 'Extract data from HTML tables to CSV format',
+        badge: 'New',
+        href: '/tools/csv-to-html?mode=html-to-csv',
+        enabled: true
+      },
+      {
         id: 'csv-to-markdown',
         name: 'CSV',
         to: 'Markdown',
@@ -86,12 +95,30 @@ const toolGroups: ToolGroup[] = [
         enabled: true
       },
       {
+        id: 'markdown-to-csv',
+        name: 'Markdown',
+        to: 'CSV',
+        description: 'Extract data from Markdown tables to CSV format',
+        badge: 'New',
+        href: '/tools/csv-to-markdown?mode=markdown-to-csv',
+        enabled: true
+      },
+      {
         id: 'csv-to-sql',
         name: 'CSV',
         to: 'SQL',
         description: 'Generate SQL INSERT statements for databases',
         badge: 'New',
         href: '/tools/csv-to-sql',
+        enabled: true
+      },
+      {
+        id: 'sql-to-csv',
+        name: 'SQL',
+        to: 'CSV',
+        description: 'Extract data from SQL INSERT statements to CSV format',
+        badge: 'New',
+        href: '/tools/csv-to-sql?mode=sql-to-csv',
         enabled: true
       },
       {
@@ -137,6 +164,63 @@ const toolGroups: ToolGroup[] = [
     ]
   },
   {
+    id: 'html',
+    source: 'HTML',
+    description: 'HTML table conversion tools',
+    icon: Code,
+    iconColor: 'text-orange-600',
+    iconBg: 'bg-orange-100',
+    tools: [
+      {
+        id: 'html-to-csv',
+        name: 'HTML',
+        to: 'CSV',
+        description: 'Extract data from HTML tables to CSV format',
+        badge: 'New',
+        href: '/tools/csv-to-html?mode=html-to-csv',
+        enabled: true
+      }
+    ]
+  },
+  {
+    id: 'markdown',
+    source: 'Markdown',
+    description: 'Markdown table conversion tools',
+    icon: FileText,
+    iconColor: 'text-purple-600',
+    iconBg: 'bg-purple-100',
+    tools: [
+      {
+        id: 'markdown-to-csv',
+        name: 'Markdown',
+        to: 'CSV',
+        description: 'Extract data from Markdown tables to CSV format',
+        badge: 'New',
+        href: '/tools/csv-to-markdown?mode=markdown-to-csv',
+        enabled: true
+      }
+    ]
+  },
+  {
+    id: 'sql',
+    source: 'SQL',
+    description: 'SQL database conversion tools',
+    icon: Code,
+    iconColor: 'text-blue-600',
+    iconBg: 'bg-blue-100',
+    tools: [
+      {
+        id: 'sql-to-csv',
+        name: 'SQL',
+        to: 'CSV',
+        description: 'Extract data from SQL INSERT statements to CSV format',
+        badge: 'New',
+        href: '/tools/csv-to-sql?mode=sql-to-csv',
+        enabled: true
+      }
+    ]
+  },
+  {
     id: 'json',
     source: 'JSON',
     description: 'JSON formatting and conversion tools',
@@ -150,6 +234,15 @@ const toolGroups: ToolGroup[] = [
         to: 'Formatter',
         description: 'Beautify, minify, and validate JSON data',
         href: '/tools/json-formatter',
+        enabled: true
+      },
+      {
+        id: 'json-to-csv',
+        name: 'JSON',
+        to: 'CSV',
+        description: 'Convert JSON data to CSV format',
+        badge: 'New',
+        href: '/tools/csv-to-json?mode=json-to-csv',
         enabled: true
       }
     ]
@@ -320,7 +413,7 @@ const toolGroups: ToolGroup[] = [
 ];
 
 export default function ToolsPage() {
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(['csv', 'json', 'excel', 'word']);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(['csv', 'html', 'markdown', 'sql', 'json', 'excel', 'word']);
   const [searchQuery, setSearchQuery] = useState('');
 
   const toggleGroup = (groupId: string) => {

@@ -307,21 +307,39 @@ Before merging a new converter:
 - ✅ CSV ↔ Excel (`/tools/csv-to-excel`)
   - Has built-in mode toggle
   - Both directions fully functional
+  - URL params: `?mode=csv-to-excel` or `?mode=excel-to-csv`
+
+- ✅ CSV ↔ HTML (`/tools/csv-to-html`)
+  - Has built-in mode toggle
+  - Both directions fully functional
+  - URL params: `?mode=csv-to-html` or `?mode=html-to-csv`
+
+- ✅ CSV ↔ Markdown (`/tools/csv-to-markdown`)
+  - Has built-in mode toggle
+  - Both directions fully functional
+  - URL params: `?mode=csv-to-markdown` or `?mode=markdown-to-csv`
+
+- ✅ CSV ↔ SQL (`/tools/csv-to-sql`)
+  - Has built-in mode toggle
+  - Both directions fully functional
+  - URL params: `?mode=csv-to-sql` or `?mode=sql-to-csv`
+
+- ✅ CSV ↔ JSON (`/tools/csv-to-json`)
+  - Has built-in mode toggle
+  - Both directions fully functional
+  - URL params: `?mode=csv-to-json` or `?mode=json-to-csv`
 
 ### Implemented (Single Direction):
-- ✅ CSV → HTML (`/tools/csv-to-html`)
-- ✅ CSV → Markdown (`/tools/csv-to-markdown`)
-- ✅ CSV → SQL (`/tools/csv-to-sql`)
 - ✅ Excel → PDF (`/tools/excel-to-pdf`)
 - ✅ Word → PDF (`/tools/word-to-pdf`)
 
-### To Be Enhanced (Add Reverse to Existing Pages):
-- ⏳ CSV ↔ HTML (add HTML → CSV to existing page)
-- ⏳ CSV ↔ Markdown (add Markdown → CSV to existing page)
-- ⏳ CSV ↔ SQL (add SQL → CSV if feasible)
+### Completed Enhancements:
+- ✅ CSV ↔ HTML (added HTML → CSV to existing page)
+- ✅ CSV ↔ Markdown (added Markdown → CSV to existing page)
+- ✅ CSV ↔ SQL (added SQL → CSV to existing page)
+- ✅ CSV ↔ JSON (added JSON → CSV to existing page)
 
 ### Future Considerations:
-- JSON ↔ CSV
 - XML ↔ CSV
 - YAML ↔ CSV
 - Excel ↔ JSON
