@@ -6,19 +6,19 @@ import { ExternalLink, Gift } from 'react-feather';
 // Translations
 const translations = {
   en: {
-    title: 'Product list which you can gift to me',
+    title: 'List of things which you can gift to me',
     description: 'Thanks for considering! Here are some items I\'d love to receive. Click on any product to view more details and purchase options.',
     viewProduct: 'View Product',
     footerNote: '💝 These are just suggestions! Any gift or even just your kind thoughts are greatly appreciated. Thank you for being so thoughtful!'
   },
   ru: {
-    title: 'Список продуктов, которые вы можете мне подарить',
+    title: 'Список вещей, которые вы можете мне подарить',
     description: 'Спасибо, что рассмотрели! Вот некоторые предметы, которые мне бы хотелось получить. Нажмите на любой продукт, чтобы просмотреть подробности и варианты покупки.',
     viewProduct: 'Просмотр продукта',
     footerNote: '💝 Это всего лишь предложения! Любой подарок или даже просто ваши добрые мысли очень ценятся. Спасибо, что вы такие внимательные!'
   },
   uz: {
-    title: 'Menga sovg\'a qila oladigan mahsulotlar ro\'yxati',
+    title: 'Menga sovg\'a qila oladigan narsalar ro\'yxati',
     description: 'Ko\'rib chiqganingiz uchun rahmat! Quyida menga juda yoqadigan ba\'zi narsalar. Batafsil ma\'lumot va xarid qilish variantlarini ko\'rish uchun har qanday mahsulotni bosing.',
     viewProduct: 'Mahsulotni ko\'rish',
     footerNote: '💝 Bu faqat takliflar! Har qanday sovg\'a yoki hatto faqat sizning mehribon fikrlaringiz juda qadrlanadi. Sizga minnatdorman!'
