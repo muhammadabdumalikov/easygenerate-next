@@ -51,6 +51,36 @@ const wishlistProducts = [
     imageUrl: 'https://mediapark.uz/_next/image?url=https%3A%2F%2Fcdn.mediapark.uz%2Fimgs%2F61b1016a-d379-4267-8ff2-2aedc51ad9bd_00.webp&w=640&q=75',
     productUrl: 'https://mediapark.uz/products/view/kofemashina-philips-ep1220-00-2879?srsltid=AfmBOoqMWouEs-zg32fVoGwh5tqbCKVOv3qnOzqP_jGGYK_ESWFT8Mrr'
   },
+  {
+    id: 5,
+    title: 'Mi 360° Home Security Camera 2K Pro',
+    imageUrl: 'https://minicam.uz/wp-content/uploads/2021/04/mi-home-security-2k-360-camera.jpg',
+    productUrl: 'https://minicam.uz/product/mi-360-home-security-camera-2k-pro/'
+  },
+  {
+    id: 6,
+    title: 'Стеклянный чайник French Press Kukmara, 1 л, с металлическим фильтром для заваривания кофе и чая',
+    imageUrl: 'https://avatars.mds.yandex.net/get-mpic/15549911/2a0000019928db8efacab669e521dc49dcb6/180x240',
+    productUrl: 'https://market.yandex.uz/card/steklyannyy-chaynik-french-press-kukmara-1-l/103836083562?do-waremd5=dj_9B1zmNJc-Z_MOuGj-gA&nid=60862720&publicId=fqyvc5857ny9kp8c3gcykzky40&utm_medium=sharing&ogV=10'
+  },
+  {
+    id: 7,
+    title: 'Пионовидные розы',
+    imageUrl: 'https://buchet.uz/_next/image?url=https%3A%2F%2Ftfstorage.buchet.uz%2Fapi%2Ffiles%2F2025%2F06%2F08%2F1749375309305-image_cropper_FC1806DF-D5AB-460A-8621-C816974CE2B4-1564-0000005F1E7133B6.webp&w=828&q=70',
+    productUrl: 'https://buchet.uz/en/product/6845594e71b25a2492da4b08'
+  },
+  {
+    id: 8,
+    title: 'Пионовидные розы',
+    imageUrl: 'https://buchet.uz/_next/image?url=https%3A%2F%2Ftfstorage.buchet.uz%2Fapi%2Ffiles%2F2025%2F07%2F22%2F1753222591856-image_cropper_87ACAD49-6B41-4CC9-A8E2-65138E4B956A-12822-0000046915D8F6FD.webp&w=828&q=70',
+    productUrl: 'https://buchet.uz/en/product/68800dc0a7705ec73ab2e4c5'
+  },
+  {
+    id: 9,
+    title: 'Часы Apple Watch Series 10',
+    imageUrl: 'https://macbro.uz/cdn/shop/files/MXLN3ref_VW_34FR_watch-case-42-aluminum-rosegold-nc-s10_VW_34FR_watch-face-42-aluminum-rosegold-s10_VW_34FR_1220x_crop_center.jpg?v=1748198858',
+    productUrl: 'https://macbro.uz/products/chasy-apple-watch-series-10?variant=49343539020074'
+  },
 ];
 
 export default function WishlistPage() {
