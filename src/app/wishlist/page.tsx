@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ExternalLink, Gift } from 'react-feather';
 
 // Translations
@@ -29,45 +29,43 @@ const translations = {
 const wishlistProducts = [
   {
     id: 1,
-    title: 'Sony WH-1000XM5 Wireless Headphones',
-    imageUrl: 'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=500&h=500&fit=crop',
-    productUrl: 'https://www.amazon.com/Sony-WH-1000XM5-Canceling-Headphones-Hands-Free/dp/B09XS7JWHH'
+    title: 'Стерилизатор 2в1 Baby Brezza',
+    imageUrl: 'https://files.ox-sys.com/cache/800x_/image/b1/fc/4c/b1fc4c1fbfa87484bde177c0854a2b50228a83d72b4c257b56dd61630d7fb869.jpg',
+    productUrl: 'https://kidpoint.uz/product/sterilizator-2v1-baby-brezza-8164'
   },
   {
     id: 2,
-    title: 'Kindle Paperwhite E-Reader',
-    imageUrl: 'https://images.unsplash.com/photo-1592496431122-2349e0fbc666?w=500&h=500&fit=crop',
-    productUrl: 'https://www.amazon.com/Kindle-Paperwhite-adjustable-Ad-Supported/dp/B08KTZ8249'
+    title: 'Кровать Baby Luxe Amina бежевая',
+    imageUrl: 'https://babyhouse.uz/wp-content/uploads/2024/06/f3ccdd27d2000e3f9255a7e3e2c48800_061824163524-840x840.jpeg',
+    productUrl: 'https://babyhouse.uz/product/krovat-baby-luxe-amina-bezhevaya'
   },
   {
     id: 3,
-    title: 'Mechanical Keyboard - Keychron K8',
-    imageUrl: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=500&h=500&fit=crop',
-    productUrl: 'https://www.keychron.com/products/keychron-k8-tenkeyless-wireless-mechanical-keyboard'
+    title: 'Бесконтактный термометр для лба и уха Momcozy',
+    imageUrl: 'https://babyhouse.uz/wp-content/uploads/2025/08/f3ccdd27d2000e3f9255a7e3e2c48800_081425165530.jpeg',
+    productUrl: 'https://babyhouse.uz/product/beskontaktnyj-termometr-dlya-lba-i-uha-momcozy/'
   },
   {
     id: 4,
-    title: 'Apple AirPods Pro (2nd Generation)',
-    imageUrl: 'https://images.unsplash.com/photo-1606841837239-c5a1a4a07af7?w=500&h=500&fit=crop',
-    productUrl: 'https://www.apple.com/airpods-pro/'
+    title: 'Кофемашина Philips EP1220/00',
+    imageUrl: 'https://mediapark.uz/_next/image?url=https%3A%2F%2Fcdn.mediapark.uz%2Fimgs%2F61b1016a-d379-4267-8ff2-2aedc51ad9bd_00.webp&w=640&q=75',
+    productUrl: 'https://mediapark.uz/products/view/kofemashina-philips-ep1220-00-2879?srsltid=AfmBOoqMWouEs-zg32fVoGwh5tqbCKVOv3qnOzqP_jGGYK_ESWFT8Mrr'
   },
-  {
-    id: 5,
-    title: 'Logitech MX Master 3S Mouse',
-    imageUrl: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=500&h=500&fit=crop',
-    productUrl: 'https://www.logitech.com/en-us/products/mice/mx-master-3s.html'
-  },
-  {
-    id: 6,
-    title: 'Samsung T7 Portable SSD 1TB',
-    imageUrl: 'https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=500&h=500&fit=crop',
-    productUrl: 'https://www.samsung.com/us/computing/memory-storage/portable-solid-state-drives/portable-ssd-t7-1tb-indigo-blue-mu-pc1t0h-ww/'
-  }
 ];
 
 export default function WishlistPage() {
   const [currentLang, setCurrentLang] = useState<'en' | 'ru' | 'uz'>('ru');
+  const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
+  const [isMounted, setIsMounted] = useState(false);
   const t = translations[currentLang];
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const handleImageError = (productId: number) => {
+    setImageErrors(prev => new Set(prev).add(productId));
+  };
 
   return (
     <div className="min-h-screen bg-[#f5f3ef]">
@@ -110,36 +108,50 @@ export default function WishlistPage() {
 
         {/* Header Section */}
         <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Gift className="w-10 h-10 text-indigo-600" />
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
+          {/* Gift Icon - Full width on mobile, beside title on desktop */}
+          <div className="flex flex-col md:flex-row items-center justify-center gap-3 mb-4">
+            <Gift className="w-16 h-16 md:w-10 md:h-10 text-indigo-600" />
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900">
               {t.title}
             </h1>
           </div>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+          <p className="text-gray-600 text-base md:text-lg max-w-2xl mx-auto px-4">
             {t.description}
           </p>
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
           {wishlistProducts.map((product) => (
             <div
               key={product.id}
-              className="group bg-white rounded-2xl overflow-hidden border-2 border-gray-100 hover:border-indigo-300 hover:shadow-xl transition-all duration-300"
+              className="group bg-white rounded-xl md:rounded-2xl overflow-hidden border-2 border-gray-100 hover:border-indigo-300 hover:shadow-xl transition-all duration-300"
             >
               {/* Product Image */}
               <div className="relative aspect-square overflow-hidden bg-gray-100">
-                <img
-                  src={product.imageUrl}
-                  alt={product.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
+                {!isMounted || imageErrors.has(product.id) ? (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50">
+                    <Gift className="w-12 h-12 md:w-20 md:h-20 text-indigo-400" />
+                  </div>
+                ) : (
+                  <img
+                    src={product.imageUrl}
+                    alt={product.title}
+                    onError={() => handleImageError(product.id)}
+                    onLoad={(e) => {
+                      const img = e.currentTarget;
+                      if (img.naturalWidth === 0 || img.naturalHeight === 0) {
+                        handleImageError(product.id);
+                      }
+                    }}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                )}
               </div>
 
               {/* Product Info */}
-              <div className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 min-h-[3.5rem] line-clamp-2">
+              <div className="p-3 md:p-6">
+                <h3 className="text-sm md:text-lg font-semibold text-gray-900 mb-2 md:mb-4 min-h-[2.5rem] md:min-h-[3.5rem] line-clamp-2">
                   {product.title}
                 </h3>
 
@@ -148,10 +160,10 @@ export default function WishlistPage() {
                   href={product.productUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-4 py-3 rounded-xl font-medium transition-all shadow-md hover:shadow-lg group/btn"
+                  className="flex items-center justify-center gap-1 md:gap-2 w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-2 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl font-medium text-xs md:text-base transition-all shadow-md hover:shadow-lg group/btn"
                 >
                   {t.viewProduct}
-                  <ExternalLink className="w-4 h-4 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                  <ExternalLink className="w-3 h-3 md:w-4 md:h-4 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
                 </a>
               </div>
             </div>
