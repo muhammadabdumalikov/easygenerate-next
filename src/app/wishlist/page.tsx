@@ -81,6 +81,36 @@ const wishlistProducts = [
     imageUrl: 'https://macbro.uz/cdn/shop/files/MXLN3ref_VW_34FR_watch-case-42-aluminum-rosegold-nc-s10_VW_34FR_watch-face-42-aluminum-rosegold-s10_VW_34FR_1220x_crop_center.jpg?v=1748198858',
     productUrl: 'https://macbro.uz/products/chasy-apple-watch-series-10?variant=49343539020074'
   },
+  {
+    id: 10,
+    title: 'Kolyaska Ining baby',
+    imageUrl: '1',
+    productUrl: 'https://www.instagram.com/reel/DNA-RAYNP6N/?igsh=anc2M2E4MzRlYmJh'
+  },
+  {
+    id: 11,
+    title: '🌿Dr.Althea 345 Relief Cream',
+    imageUrl: 'https://m.media-amazon.com/images/I/51ImJkfL-NL._SX679_.jpg',
+    productUrl: 'https://taplink.cc/milum.uz/o/c20331/'
+  },
+  {
+    id: 12,
+    title: 'Крем для век с коллагеном Axis-Y Vegan Collagen Eye Serum',
+    imageUrl: 'https://comax.uz/4210-thickbox_default/vegan-collagen-eye-serum.webp',
+    productUrl: 'https://comax.uz/ru/tochechnyj-ukhod/vegan-collagen-eye-serum.html'
+  },
+  {
+    id: 14,
+    title: 'Подтягивающая сыворотка с ретинолом Retinol Shot Tightening Serum',
+    imageUrl: 'https://comax.uz/5321-thickbox_default/retinol-shot-tightening-serum.webp',
+    productUrl: 'https://comax.uz/ru/essenciya-i-syvorotki/retinol-shot-tightening-serum.html'
+  },
+  {
+    id: 15,
+    title: 'Подтягивающий бустер-крем с ретиналем и микроиглами Celimax Retinal Shot Tightening Booster',
+    imageUrl: 'https://comax.uz/4560-thickbox_default/retinal-shot-tightening-booster.webp',
+    productUrl: 'https://comax.uz/ru/tochechnyj-ukhod/retinal-shot-tightening-booster.html?srsltid=AfmBOoolahYs5TdCCUIMIHL60Q-4Rldxv1fUf1tVviARhu3FfN4IvX0S'
+  },
 ];
 
 export default function WishlistPage() {
