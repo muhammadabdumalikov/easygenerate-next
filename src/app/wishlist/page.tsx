@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ExternalLink, Gift, Globe } from 'react-feather';
+import { ExternalLink, Gift } from 'react-feather';
 
 // Translations
 const translations = {
