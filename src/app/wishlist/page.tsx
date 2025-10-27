@@ -111,6 +111,30 @@ const wishlistProducts = [
     imageUrl: 'https://comax.uz/4560-thickbox_default/retinal-shot-tightening-booster.webp',
     productUrl: 'https://comax.uz/ru/tochechnyj-ukhod/retinal-shot-tightening-booster.html?srsltid=AfmBOoolahYs5TdCCUIMIHL60Q-4Rldxv1fUf1tVviARhu3FfN4IvX0S'
   },
+  {
+    id: 16,
+    title: 'Доска-мольберт для рисования, детский, двусторонний, с маркерами, мелками, магнитный',
+    imageUrl: 'https://avatars.mds.yandex.net/get-mpic/16174181/2a000001993421cfce466dce7cf726760aa9/180x240',
+    productUrl: 'https://market.yandex.uz/card/doska-molbert-dlya-risovaniya-detskiy-dvustoronniy-s-markerami-melkami-magnitnyy/4578917619?do-waremd5=RHqyKpx2r9zFt_ELJCOkYg&nid=63822923&publicId=fqyvc5857ny9kp8c3gcykzky40&utm_medium=sharing&ogV=10'
+  },
+  {
+    id: 17,
+    title: 'Палатка-домик Nopino, для игр и творчества детей, складная, с окошками',
+    imageUrl: 'https://avatars.mds.yandex.net/get-mpic/16485002/2a00000198711a067b7545ed68f9eafb70ba/180x240',
+    productUrl: 'https://market.yandex.uz/card/palatka-domik-nopino-dlya-igr-i-tvorchestva-detey-skladnaya-s-okoshkami/4566829406?do-waremd5=ufu_pQhFmP5n8SuQoWJueA&nid=63754108&publicId=fqyvc5857ny9kp8c3gcykzky40&utm_medium=sharing&ogV=10'
+  },
+  {
+    id: 18,
+    title: 'La Belle',
+    imageUrl: 'https://parfumgallery.uz/_next/image?url=https%3A%2F%2Fspaces.parfumgallery.uz%2Fimages%2Fproducts%2F2025-09-15T07-16-01-932Z_SJP-32329_65132209_JPG-LA-BELLE-EDP-50ML.png&w=1080&q=100',
+    producturl: 'https://parfumgallery.uz/catalog/la-belle?srsltid=AfmBOooMVRaFxjHUE6DtZsJPn2HJWl2DKnGq6d8G3UqMXFTAamwxPxbJ',
+  },
+  {
+    id: 19,
+    title: 'Соковыжималка Braun J700 MultiQuick 7',
+    imageUrl: 'https://cdn.mediapark.uz/imgs/b0389790-e4a0-434a-b5fc-d9dc92354e19_Artboard-1.webp',
+    productUrl: 'https://mediapark.uz/products/view/sokovyzhimalka-braun-j700-1324'
+  }
 ];
 
 export default function WishlistPage() {
