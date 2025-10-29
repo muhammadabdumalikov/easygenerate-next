@@ -329,6 +329,11 @@ Before merging a new converter:
   - Both directions fully functional
   - URL params: `?mode=csv-to-json` or `?mode=json-to-csv`
 
+- ✅ JSON ↔ ENV (`/tools/json-to-env`)
+  - Has built-in mode toggle
+  - Both directions fully functional
+  - URL params: `?mode=json-to-env` or `?mode=env-to-json`
+
 ### Implemented (Single Direction):
 - ✅ Excel → PDF (`/tools/excel-to-pdf`)
 - ✅ Word → PDF (`/tools/word-to-pdf`)

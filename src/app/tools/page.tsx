@@ -244,7 +244,16 @@ const toolGroups: ToolGroup[] = [
         badge: 'New',
         href: '/tools/csv-to-json?mode=json-to-csv',
         enabled: true
-      }
+      },
+      {
+        id: 'json-to-env',
+        name: 'JSON',
+        to: 'ENV',
+        description: 'Convert JSON to environment variables format',
+        badge: 'New',
+        href: '/tools/json-to-env',
+        enabled: true
+      },
     ]
   },
   {
