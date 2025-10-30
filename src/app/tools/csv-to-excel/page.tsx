@@ -5,7 +5,9 @@ import Script from 'next/script';
 import { useSearchParams } from 'next/navigation';
 import ConverterLayout from '@/components/converters/ConverterLayout';
 import { FileText, Download, Table, CheckCircle, AlertCircle, AlertTriangle, Upload, X } from 'react-feather';
-import ExcelJS from 'exceljs';
+// Lazy-load ExcelJS when needed to reduce initial JS
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let ExcelJSImport: any | null = null;
 
 type ConversionStatus = 'idle' | 'processing' | 'success' | 'error';
 
@@ -83,7 +85,10 @@ function CSVToExcelContent() {
     try {
       // Read Excel file
       const arrayBuffer = await file.arrayBuffer();
-      const workbook = new ExcelJS.Workbook();
+      if (!ExcelJSImport) {
+        ExcelJSImport = (await import('exceljs')).default;
+      }
+      const workbook = new ExcelJSImport.Workbook();
       await workbook.xlsx.load(arrayBuffer);
       
 
@@ -117,10 +122,10 @@ function CSVToExcelContent() {
       let maxColumns = 0;
       
       // Extract all rows
-      worksheet.eachRow((row, rowNumber) => {
+      worksheet.eachRow((row: any, rowNumber: number) => {
         console.log(`Processing row ${rowNumber}, cells:`, row.cellCount);
         const rowData: string[] = [];
-        row.eachCell({ includeEmpty: true }, (cell) => {
+        row.eachCell({ includeEmpty: true }, (cell: any) => {
           const value = cell.value;
           let cellValue = '';
           
@@ -391,7 +396,10 @@ function CSVToExcelContent() {
       setProgress(20);
 
       // Create workbook
-      const workbook = new ExcelJS.Workbook();
+      if (!ExcelJSImport) {
+        ExcelJSImport = (await import('exceljs')).default;
+      }
+      const workbook = new ExcelJSImport.Workbook();
       const worksheet = workbook.addWorksheet(options.sheetName);
       
       setProgress(40);

@@ -4,13 +4,11 @@ import { useState } from 'react';
 import Script from 'next/script';
 import { FileText, Upload, Download, AlertCircle, CheckCircle, Table, Trash2 } from 'react-feather';
 import ConverterLayout from '@/components/converters/ConverterLayout';
-import ExcelJS from 'exceljs';
-import pdfMake from 'pdfmake/build/pdfmake';
-import pdfFonts from 'pdfmake/build/vfs_fonts';
-
-// Initialize pdfMake with fonts
+// Lazy-load heavy libs (ExcelJS, pdfMake) when needed
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(pdfMake as any).vfs = pdfFonts;
+let ExcelJSImport: any | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let pdfMakeImport: any | null = null;
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -49,7 +47,10 @@ export default function ExcelToPDF() {
   const excelToPDF = async (file: File): Promise<{ buffer: ArrayBuffer; pages: number }> => {
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const workbook = new ExcelJS.Workbook();
+      if (!ExcelJSImport) {
+        ExcelJSImport = (await import('exceljs')).default;
+      }
+      const workbook = new ExcelJSImport.Workbook();
       await workbook.xlsx.load(arrayBuffer);
       if (!workbook.worksheets || workbook.worksheets.length === 0) {
         throw new Error('No worksheets found in Excel file');
@@ -65,10 +66,10 @@ export default function ExcelToPDF() {
       // Extract data with proper encoding handling
       const data: string[][] = [];
 
-      worksheet.eachRow((row) => {
+      worksheet.eachRow((row: any) => {
         const rowData: string[] = [];
 
-        row.eachCell({ includeEmpty: true }, (cell) => {
+        row.eachCell({ includeEmpty: true }, (cell: any) => {
           const value = cell.value;
           let cellValue = '';
 
@@ -151,23 +152,25 @@ export default function ExcelToPDF() {
 
       // Generate PDF
       return new Promise((resolve) => {
-        const pdfDocGenerator = pdfMake.createPdf(docDefinition);
-
-        pdfDocGenerator.getBuffer((buffer: Uint8Array) => {
-          // Estimate pages (pdfMake doesn't provide exact page count easily)
-          const estimatedPages = Math.ceil(data.length / 30);
-
-          // Convert Buffer to ArrayBuffer
-          const arrayBuffer = buffer.buffer.slice(
-            buffer.byteOffset,
-            buffer.byteOffset + buffer.byteLength
-          ) as ArrayBuffer;
-
-          resolve({
-            buffer: arrayBuffer,
-            pages: estimatedPages
+        const generate = async () => {
+          if (!pdfMakeImport) {
+            const pdfMakeModule = await import('pdfmake/build/pdfmake');
+            const pdfFontsModule = await import('pdfmake/build/vfs_fonts');
+            pdfMakeImport = pdfMakeModule.default;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (pdfMakeImport as any).vfs = (pdfFontsModule as any).default;
+          }
+          const pdfDocGenerator = pdfMakeImport.createPdf(docDefinition);
+          pdfDocGenerator.getBuffer((buffer: Uint8Array) => {
+            const estimatedPages = Math.ceil(data.length / 30);
+            const arrayBuffer = buffer.buffer.slice(
+              buffer.byteOffset,
+              buffer.byteOffset + buffer.byteLength
+            ) as ArrayBuffer;
+            resolve({ buffer: arrayBuffer, pages: estimatedPages });
           });
-        });
+        };
+        void generate();
       });
     } catch (error) {
       console.error('Excel to PDF conversion error:', error);
