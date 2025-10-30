@@ -5,7 +5,7 @@ import { Globe } from 'react-feather';
 import { useState, useEffect } from 'react';
 
 export default function Footer() {
-  const [convertedFiles, setConvertedFiles] = useState(3191036609);
+  const [convertedFiles, setConvertedFiles] = useState(1191037);
 
   // Animate the counter on mount
   useEffect(() => {
@@ -129,9 +129,9 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 4: About Cloudify */}
+          {/* Column 4: About Converto */}
           <div>
-            <h3 className="text-white font-semibold mb-4 text-lg">About Cloudify</h3>
+            <h3 className="text-white font-semibold mb-4 text-lg">About Converto</h3>
             <p className="text-gray-400 leading-relaxed text-sm mb-4">
               Fast and reliable file converter for all your needs. Supporting 300+ formats with cloud-based processing.
             </p>
@@ -173,7 +173,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
-            <span>© 2014-2025 Cloudify Ltd. All rights reserved.</span>
+            <span>© 2024-2025 Converto Ltd. All rights reserved.</span>
             <span className="hidden md:inline">•</span>
             <Link href="/terms" className="hover:text-indigo-400 transition-colors">
               Terms of Use

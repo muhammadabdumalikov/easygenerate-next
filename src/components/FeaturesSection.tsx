@@ -36,7 +36,7 @@ const features = [
   {
     icon: Monitor,
     title: "All devices supported",
-    description: "Cloudify is browser-based and works for all platforms. There is no need to download and install any software."
+    description: "Converto is browser-based and works for all platforms. There is no need to download and install any software."
   }
 ];
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -14,8 +15,71 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Cloudify - Cloud File Converter & Generator",
-  description: "Online file converter and generator tool. Convert audio, video, documents, images, and more with ease.",
+  metadataBase: new URL("https://converto.app"),
+  title: {
+    default: "Converto - Cloud File Converter & Generator",
+    template: "%s | Converto",
+  },
+  description:
+    "Online file converter and generator tool. Convert audio, video, documents, images, and more with ease.",
+  keywords: [
+    "file converter",
+    "online converter",
+    "csv to json",
+    "csv to excel",
+    "json formatter",
+    "excel to pdf",
+    "word to pdf",
+    "image to pdf",
+  ],
+  applicationName: "Converto",
+  authors: [{ name: "Converto" }],
+  creator: "Converto",
+  publisher: "Converto",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: "https://converto.app/",
+    siteName: "Converto",
+    title: "Converto - Cloud File Converter & Generator",
+    description:
+      "Convert, compress, and transform files instantly. 50+ professional tools, no registration required.",
+    images: [
+      {
+        url: "/globe.svg",
+        width: 1200,
+        height: 630,
+        alt: "Converto - Online File Converter",
+      },
+    ],
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@converto",
+    creator: "@converto",
+    title: "Converto - Cloud File Converter & Generator",
+    description:
+      "Convert, compress, and transform files instantly. 50+ professional tools, no registration required.",
+    images: ["/globe.svg"],
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
+  category: "utilities",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-snippet': -1,
+      'max-image-preview': "large",
+      'max-video-preview': -1,
+    },
+  },
 };
 
 export default function RootLayout({
@@ -28,6 +92,33 @@ export default function RootLayout({
       <body
         className={`${plusJakartaSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Script id="ld-org" type="application/ld+json" strategy="afterInteractive">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "Converto",
+            url: "https://converto.app",
+            logo: "https://converto.app/globe.svg",
+            sameAs: [
+              "https://twitter.com/converto",
+              "https://github.com/converto",
+              "https://www.linkedin.com/company/converto"
+            ]
+          })}
+        </Script>
+        <Script id="ld-website" type="application/ld+json" strategy="afterInteractive">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "Converto",
+            url: "https://converto.app",
+            potentialAction: {
+              "@type": "SearchAction",
+              target: "https://converto.app/?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          })}
+        </Script>
         {children}
       </body>
     </html>
