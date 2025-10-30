@@ -551,6 +551,17 @@ Coffee Maker,Appliances,89.99,56`;
         }
       })}
     </Script>
+    <Script id="ld-breadcrumb-csv-to-excel" type="application/ld+json" strategy="afterInteractive">
+      {JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: "https://converto.dev/" },
+          { "@type": "ListItem", position: 2, name: "Tools", item: "https://converto.dev/tools" },
+          { "@type": "ListItem", position: 3, name: "CSV to Excel" }
+        ]
+      })}
+    </Script>
     <ConverterLayout
       title={conversionMode === 'csv-to-excel' ? "CSV to Excel Converter" : "Excel to CSV Converter"}
       description={

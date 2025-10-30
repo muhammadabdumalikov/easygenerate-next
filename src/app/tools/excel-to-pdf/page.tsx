@@ -328,6 +328,17 @@ export default function ExcelToPDF() {
         }
       })}
     </Script>
+    <Script id="ld-breadcrumb-excel-to-pdf" type="application/ld+json" strategy="afterInteractive">
+      {JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: "https://converto.dev/" },
+          { "@type": "ListItem", position: 2, name: "Tools", item: "https://converto.dev/tools" },
+          { "@type": "ListItem", position: 3, name: "Excel to PDF" }
+        ]
+      })}
+    </Script>
     <ConverterLayout
       title="Excel to PDF Converter"
       description="Convert Excel spreadsheets to PDF documents. Preserve your data in a portable format."

@@ -351,6 +351,17 @@ API_TIMEOUT=30`);
             }
           })}
         </Script>
+        <Script id="ld-breadcrumb-json-to-env" type="application/ld+json" strategy="afterInteractive">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Home", item: "https://converto.dev/" },
+              { "@type": "ListItem", position: 2, name: "Tools", item: "https://converto.dev/tools" },
+              { "@type": "ListItem", position: 3, name: "JSON to ENV" }
+            ]
+          })}
+        </Script>
         <ConverterLayout
             title={conversionMode === 'json-to-env' ? 'JSON to ENV Converter' : 'ENV to JSON Converter'}
             description={conversionMode === 'json-to-env'
