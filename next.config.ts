@@ -20,9 +20,9 @@ const nextConfig: NextConfig = {
       {
         source: '/:path*',
         has: [
-          { type: 'host', value: 'www.converto.app' },
+          { type: 'host', value: 'www.converto.dev' },
         ],
-        destination: 'https://converto.app/:path*',
+        destination: 'https://converto.dev/:path*',
         permanent: true,
       },
     ];

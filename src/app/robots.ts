@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = "https://converto.app";
+  const baseUrl = "https://converto.dev";
 
   return {
     rules: {

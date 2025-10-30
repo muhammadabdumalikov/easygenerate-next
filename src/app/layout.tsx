@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://converto.app"),
+  metadataBase: new URL("https://converto.dev"),
   title: {
     default: "Converto - Cloud File Converter & Generator",
     template: "%s | Converto",
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    url: "https://converto.app/",
+    url: "https://converto.dev/",
     siteName: "Converto",
     title: "Converto - Cloud File Converter & Generator",
     description:
@@ -96,8 +96,8 @@ export default function RootLayout({
             "@context": "https://schema.org",
             "@type": "Organization",
             name: "Converto",
-            url: "https://converto.app",
-            logo: "https://converto.app/globe.svg",
+            url: "https://converto.dev",
+            logo: "https://converto.dev/globe.svg",
             sameAs: [
               "https://twitter.com/converto",
               "https://github.com/converto",
@@ -110,10 +110,10 @@ export default function RootLayout({
             "@context": "https://schema.org",
             "@type": "WebSite",
             name: "Converto",
-            url: "https://converto.app",
+            url: "https://converto.dev",
             potentialAction: {
               "@type": "SearchAction",
-              target: "https://converto.app/?q={search_term_string}",
+              target: "https://converto.dev/?q={search_term_string}",
               "query-input": "required name=search_term_string"
             }
           })}

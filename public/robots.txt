@@ -4,5 +4,5 @@ Disallow: /api/
 Disallow: /_next/
 Disallow: /private/
 
-Sitemap: https://converto.app/sitemap.xml
-Host: converto.app
+Sitemap: https://converto.dev/sitemap.xml
+Host: converto.dev

@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://converto.app";
+  const baseUrl = "https://converto.dev";
 
   const staticRoutes: MetadataRoute.Sitemap = [
     "",

@@ -6,7 +6,7 @@ export default function Head() {
       <title>{title}</title>
       <meta name="title" content={title} />
       <meta name="description" content={description} />
-      <link rel="canonical" href="https://converto.app/" />
+      <link rel="canonical" href="https://converto.dev/" />
     </>
   );
 }
