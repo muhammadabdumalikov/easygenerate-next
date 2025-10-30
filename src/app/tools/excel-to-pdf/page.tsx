@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { Row, Cell } from 'exceljs';
 import Script from 'next/script';
 import { FileText, Upload, Download, AlertCircle, CheckCircle, Table, Trash2 } from 'react-feather';
 import ConverterLayout from '@/components/converters/ConverterLayout';
@@ -66,10 +67,10 @@ export default function ExcelToPDF() {
       // Extract data with proper encoding handling
       const data: string[][] = [];
 
-      worksheet.eachRow((row: any) => {
+      worksheet.eachRow((row: Row) => {
         const rowData: string[] = [];
 
-        row.eachCell({ includeEmpty: true }, (cell: any) => {
+        row.eachCell({ includeEmpty: true }, (cell: Cell) => {
           const value = cell.value;
           let cellValue = '';
 

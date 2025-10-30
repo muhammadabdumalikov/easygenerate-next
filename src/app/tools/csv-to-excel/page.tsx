@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
+import type { Row, Cell } from 'exceljs';
 import Script from 'next/script';
 import { useSearchParams } from 'next/navigation';
 import ConverterLayout from '@/components/converters/ConverterLayout';
@@ -122,10 +123,10 @@ function CSVToExcelContent() {
       let maxColumns = 0;
       
       // Extract all rows
-      worksheet.eachRow((row: any, rowNumber: number) => {
+      worksheet.eachRow((row: Row, rowNumber: number) => {
         console.log(`Processing row ${rowNumber}, cells:`, row.cellCount);
         const rowData: string[] = [];
-        row.eachCell({ includeEmpty: true }, (cell: any) => {
+        row.eachCell({ includeEmpty: true }, (cell: Cell) => {
           const value = cell.value;
           let cellValue = '';
           
