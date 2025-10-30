@@ -375,6 +375,106 @@ export default function Home() {
       {/* Features Section */}
       <FeaturesSection />
 
+      {/* SEO Content Section */}
+      <section className="px-8 py-16 max-w-5xl mx-auto">
+        <article className="prose prose-indigo max-w-none">
+          <h2>Why Choose Converto for Fast, Secure Online File Conversion</h2>
+          <p>
+            Converto is a modern, cloud-powered suite of file conversion tools designed to
+            help individuals, teams, and businesses transform their content with speed and
+            reliability. Whether you are preparing CSV datasets for analytics, exporting
+            polished reports as PDF, converting images for the web, or formatting JSON for
+            configuration files, Converto brings together a curated set of simple, powerful
+            utilities that just work in the browser—no installation, no sign-up, and no
+            hassle. Our focus is on clarity, performance, and privacy so you can convert
+            with confidence.
+          </p>
+          <h3>Simple Tools That Solve Real Problems</h3>
+          <p>
+            Every tool at Converto is built around real-world workflows. Need to transform
+            a spreadsheet into a clean PDF for a presentation? Use our Excel to PDF tool
+            to export a consistent, print-ready document in seconds. Want to publish a data
+            sample in your documentation? Convert CSV to Markdown or HTML and paste the
+            result directly into your knowledge base. Working with APIs and environment
+            variables? Our JSON to ENV generator helps teams avoid common formatting errors
+            and keeps configuration changes predictable and safe.
+          </p>
+          <h3>Privacy First and Performance by Design</h3>
+          <p>
+            Your files are your business. Converto is engineered to minimize data
+            exposure: whenever feasible, we process files directly in your browser using
+            efficient, well-tested libraries. For operations that require server-side
+            processing, we isolate workloads and apply strict, time-limited retention
+            policies. Our infrastructure is optimized for throughput and consistency, which
+            means conversions complete quickly—even for larger files—without sacrificing
+            quality.
+          </p>
+          <h3>Support for 300+ Formats and Growing</h3>
+          <p>
+            From documents and spreadsheets to images, audio, and video, Converto supports
+            a broad and expanding catalog of formats. Popular workflows include CSV ⇄ Excel,
+            JSON beautification and validation, CSV to SQL for quick prototyping, and a
+            variety of PDF conversions. We continually improve our converters based on
+            usability research and real user feedback, prioritizing stability and
+            predictability over gimmicks.
+          </p>
+          <h3>Built for Developers and Non‑Developers Alike</h3>
+          <p>
+            Converto offers a thoughtfully designed interface that makes complex
+            transformations feel straightforward. Non-technical users appreciate clear
+            guidance, smart defaults, and instant previews. Developers benefit from
+            deterministic output, consistent encodings, and options that align with common
+            automation pipelines. Our goal is to remove friction so anyone can produce
+            accurate results on the first try.
+          </p>
+          <h3>Common Use Cases</h3>
+          <ul>
+            <li>
+              Data teams converting raw CSV exports into analysis-ready formats like Excel
+              and SQL insert statements.
+            </li>
+            <li>
+              Product managers and technical writers turning tabular data into Markdown or
+              HTML tables for documentation.
+            </li>
+            <li>
+              Engineers formatting JSON payloads for debugging, demos, and production
+              configs using standardized ENV generation.
+            </li>
+            <li>
+              Business users exporting polished PDFs from spreadsheets for reports and
+              stakeholder updates.
+            </li>
+          </ul>
+          <h3>Accuracy, Accessibility, and Internationalization</h3>
+          <p>
+            Precision matters. We handle edge cases like delimiter detection, character
+            encodings, quoted fields, date and number formats, and large file pagination.
+            Converto is built with accessibility in mind, adhering to modern best
+            practices for keyboard navigation, color contrast, and screen reader support.
+            We are investing in localization so users can confidently convert content in
+            their preferred language and regional formats.
+          </p>
+          <h3>Roadmap and Continuous Improvement</h3>
+          <p>
+            We are expanding our catalog with image, audio, and video processing
+            enhancements, as well as a universal converter that brings together smart
+            detection and format recommendations. Upcoming features include bulk operations,
+            improved previews, and more granular control over output options. If a format
+            or workflow you need is missing, tell us—user feedback directly informs our
+            priorities.
+          </p>
+          <h3>Get Started in Seconds</h3>
+          <p>
+            Converto is free to use with no sign-up required. Browse the tools above, drag
+            and drop your files, and export your results instantly. For teams that need
+            advanced features, we are working on premium options focused on automation,
+            collaboration, and enterprise controls. Converto is the fast, reliable way to
+            convert files and elevate your workflows—right from your browser.
+          </p>
+        </article>
+      </section>
+
       <Footer />
     </div>
   );
