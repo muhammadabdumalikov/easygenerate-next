@@ -205,7 +205,7 @@ export default function Home() {
       <section className="px-8 py-12 max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-            Free Online Converter Tools
+            Free Online File Converter Tools (CSV, PDF, JSON)
           </h1>
           <p className="text-gray-600 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed mb-8">
             Convert, compress, and transform files instantly. 
@@ -389,8 +389,14 @@ export default function Home() {
             hassle. Our focus is on clarity, performance, and privacy so you can convert
             with confidence.
           </p>
-          <h3>Simple Tools That Solve Real Problems</h3>
+          <h3>Simple Converter Tools That Solve Real Problems</h3>
           <p>
+          <h3>Popular Conversions: CSV to Excel, Excel to PDF, JSON to ENV</h3>
+          <p>
+            Convert CSV to Excel for reports, export Excel to PDF for sharing, and
+            transform JSON to ENV for configuration. These frequently used file
+            converter workflows are optimized for accuracy and speed.
+          </p>
             Every tool at Converto is built around real-world workflows. Need to transform
             a spreadsheet into a clean PDF for a presentation? Use our Excel to PDF tool
             to export a consistent, print-ready document in seconds. Want to publish a data
