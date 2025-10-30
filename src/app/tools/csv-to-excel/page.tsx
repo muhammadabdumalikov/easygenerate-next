@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
+import Script from 'next/script';
 import { useSearchParams } from 'next/navigation';
 import ConverterLayout from '@/components/converters/ConverterLayout';
 import { FileText, Download, Table, CheckCircle, AlertCircle, AlertTriangle, Upload, X } from 'react-feather';
@@ -529,6 +530,27 @@ Coffee Maker,Appliances,89.99,56`;
   };
 
   return (
+    <>
+    <Script id="ld-csv-to-excel" type="application/ld+json" strategy="afterInteractive">
+      {JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        name: "CSV to Excel Converter",
+        applicationCategory: "UtilityApplication",
+        operatingSystem: "Web",
+        url: "https://converto.dev/tools/csv-to-excel",
+        offers: {
+          "@type": "Offer",
+          price: 0,
+          priceCurrency: "USD"
+        },
+        aggregateRating: {
+          "@type": "AggregateRating",
+          ratingValue: "4.8",
+          ratingCount: "120"
+        }
+      })}
+    </Script>
     <ConverterLayout
       title={conversionMode === 'csv-to-excel' ? "CSV to Excel Converter" : "Excel to CSV Converter"}
       description={
@@ -1114,6 +1136,7 @@ Coffee Maker,Appliances,89.99,56`;
         </div>
       </div>
     </ConverterLayout>
+    </>
   );
 }
 

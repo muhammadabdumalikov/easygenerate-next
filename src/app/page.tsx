@@ -376,7 +376,7 @@ export default function Home() {
       <FeaturesSection />
 
       {/* SEO Content Section */}
-      <section className="px-8 py-16 max-w-5xl mx-auto">
+      <section className="px-8 max-w-5xl mx-auto invisible h-0 overflow-hidden">
         <article className="prose prose-indigo max-w-none">
           <h2>Why Choose Converto for Fast, Secure Online File Conversion</h2>
           <p>

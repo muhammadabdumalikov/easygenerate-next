@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
+import Script from 'next/script';
 import { useSearchParams } from 'next/navigation';
 import ConverterLayout from '@/components/converters/ConverterLayout';
 import { FileText, Download, Settings, CheckCircle, AlertCircle, Upload, Trash2 } from 'react-feather';
@@ -334,6 +335,22 @@ API_TIMEOUT=30`);
     };
 
     return (
+        <>
+        <Script id="ld-json-to-env" type="application/ld+json" strategy="afterInteractive">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            name: "JSON to ENV Converter",
+            applicationCategory: "UtilityApplication",
+            operatingSystem: "Web",
+            url: "https://converto.dev/tools/json-to-env",
+            offers: {
+              "@type": "Offer",
+              price: 0,
+              priceCurrency: "USD"
+            }
+          })}
+        </Script>
         <ConverterLayout
             title={conversionMode === 'json-to-env' ? 'JSON to ENV Converter' : 'ENV to JSON Converter'}
             description={conversionMode === 'json-to-env'
@@ -684,6 +701,7 @@ API_TIMEOUT=30`);
                 </div>
             )}
         </ConverterLayout>
+        </>
     );
 }
 

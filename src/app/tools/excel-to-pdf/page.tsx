@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Script from 'next/script';
 import { FileText, Upload, Download, AlertCircle, CheckCircle, Table, Trash2 } from 'react-feather';
 import ConverterLayout from '@/components/converters/ConverterLayout';
 import ExcelJS from 'exceljs';
@@ -311,6 +312,22 @@ export default function ExcelToPDF() {
   };
 
   return (
+    <>
+    <Script id="ld-excel-to-pdf" type="application/ld+json" strategy="afterInteractive">
+      {JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        name: "Excel to PDF Converter",
+        applicationCategory: "UtilityApplication",
+        operatingSystem: "Web",
+        url: "https://converto.dev/tools/excel-to-pdf",
+        offers: {
+          "@type": "Offer",
+          price: 0,
+          priceCurrency: "USD"
+        }
+      })}
+    </Script>
     <ConverterLayout
       title="Excel to PDF Converter"
       description="Convert Excel spreadsheets to PDF documents. Preserve your data in a portable format."
@@ -648,6 +665,7 @@ export default function ExcelToPDF() {
         </div>
       </div>
     </ConverterLayout>
+    </>
   );
 }
 
