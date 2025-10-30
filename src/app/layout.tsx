@@ -17,11 +17,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://converto.dev"),
   title: {
-    default: "Converto - Cloud File Converter & Generator",
+    default: "Free Online File Converter (50+ Formats) | Converto",
     template: "%s | Converto",
   },
   description:
-    "Online file converter and generator tool. Convert audio, video, documents, images, and more with ease.",
+    "Convert, compress, and transform files online with 50+ professional tools—CSV, Excel, PDF, JSON, images, audio, and more. Fast, secure, and no sign‑up required.",
   keywords: [
     "file converter",
     "online converter",
@@ -38,6 +38,10 @@ export const metadata: Metadata = {
   publisher: "Converto",
   alternates: {
     canonical: "/",
+    languages: {
+      "en": "/",
+      "x-default": "/",
+    },
   },
   openGraph: {
     type: "website",
