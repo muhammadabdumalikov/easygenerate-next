@@ -42,9 +42,9 @@ export default function Footer() {
         </div>
 
         {/* Footer Links Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12"> */}
           {/* Column 1: Company */}
-          <div>
+          {/* <div>
             <h3 className="text-white font-semibold mb-4 text-lg">Company</h3>
             <ul className="space-y-3">
               <li>
@@ -68,10 +68,10 @@ export default function Footer() {
                 </Link>
               </li>
             </ul>
-          </div>
+          </div> */}
 
           {/* Column 2: Tools */}
-          <div>
+          {/* <div>
             <h3 className="text-white font-semibold mb-4 text-lg">Tools</h3>
             <ul className="space-y-3">
               <li>
@@ -100,10 +100,10 @@ export default function Footer() {
                 </Link>
               </li>
             </ul>
-          </div>
+          </div> */}
 
           {/* Column 3: Developers */}
-          <div>
+          {/* <div>
             <h3 className="text-white font-semibold mb-4 text-lg">Developers</h3>
             <ul className="space-y-3">
               <li>
@@ -127,10 +127,10 @@ export default function Footer() {
                 </Link>
               </li>
             </ul>
-          </div>
+          </div> */}
 
           {/* Column 4: About Converto */}
-          <div>
+          {/* <div>
             <h3 className="text-white font-semibold mb-4 text-lg">About Converto</h3>
             <p className="text-gray-400 leading-relaxed text-sm mb-4">
               Fast and reliable file converter for all your needs. Supporting 300+ formats with cloud-based processing.
@@ -167,8 +167,8 @@ export default function Footer() {
                 </svg>
               </a>
             </div>
-          </div>
-        </div>
+          </div> */}
+        {/* </div> */}
 
         {/* Bottom Bar */}
         <div className="border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
