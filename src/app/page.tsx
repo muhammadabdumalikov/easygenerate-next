@@ -391,12 +391,6 @@ export default function Home() {
           </p>
           <h3>Simple Converter Tools That Solve Real Problems</h3>
           <p>
-          <h3>Popular Conversions: CSV to Excel, Excel to PDF, JSON to ENV</h3>
-          <p>
-            Convert CSV to Excel for reports, export Excel to PDF for sharing, and
-            transform JSON to ENV for configuration. These frequently used file
-            converter workflows are optimized for accuracy and speed.
-          </p>
             Every tool at Converto is built around real-world workflows. Need to transform
             a spreadsheet into a clean PDF for a presentation? Use our Excel to PDF tool
             to export a consistent, print-ready document in seconds. Want to publish a data
@@ -404,6 +398,10 @@ export default function Home() {
             result directly into your knowledge base. Working with APIs and environment
             variables? Our JSON to ENV generator helps teams avoid common formatting errors
             and keeps configuration changes predictable and safe.
+          </p>
+          <h3>Popular Conversions: CSV to Excel, Excel to PDF, JSON to ENV</h3>
+          <p>
+            Convert CSV to Excel for reports, export Excel to PDF for sharing, and transform JSON to ENV for configuration. These frequently used file converter workflows are optimized for accuracy and speed.
           </p>
           <h3>Privacy First and Performance by Design</h3>
           <p>

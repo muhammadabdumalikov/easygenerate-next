@@ -94,7 +94,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta property="og:updated_time" content={new Date().toISOString()} />
         <Script id="ld-org" type="application/ld+json" strategy="beforeInteractive">
           {JSON.stringify({
             "@context": "https://schema.org",
