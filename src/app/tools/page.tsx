@@ -77,15 +77,6 @@ const toolGroups: ToolGroup[] = [
         enabled: true
       },
       {
-        id: 'html-to-csv',
-        name: 'HTML',
-        to: 'CSV',
-        description: 'Extract data from HTML tables to CSV format',
-        badge: 'New',
-        href: '/tools/csv-to-html?mode=html-to-csv',
-        enabled: true
-      },
-      {
         id: 'csv-to-markdown',
         name: 'CSV',
         to: 'Markdown',
@@ -95,30 +86,12 @@ const toolGroups: ToolGroup[] = [
         enabled: true
       },
       {
-        id: 'markdown-to-csv',
-        name: 'Markdown',
-        to: 'CSV',
-        description: 'Extract data from Markdown tables to CSV format',
-        badge: 'New',
-        href: '/tools/csv-to-markdown?mode=markdown-to-csv',
-        enabled: true
-      },
-      {
         id: 'csv-to-sql',
         name: 'CSV',
         to: 'SQL',
         description: 'Generate SQL INSERT statements for databases',
         badge: 'New',
         href: '/tools/csv-to-sql',
-        enabled: true
-      },
-      {
-        id: 'sql-to-csv',
-        name: 'SQL',
-        to: 'CSV',
-        description: 'Extract data from SQL INSERT statements to CSV format',
-        badge: 'New',
-        href: '/tools/csv-to-sql?mode=sql-to-csv',
         enabled: true
       },
       {

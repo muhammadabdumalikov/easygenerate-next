@@ -54,6 +54,17 @@ const popularTools = [
     enabled: true
   },
   {
+    id: 'json-to-env',
+    name: 'JSON to ENV',
+    description: 'Convert JSON config to .env format',
+    icon: Code,
+    iconColor: 'text-purple-600',
+    iconBg: 'bg-purple-100',
+    category: 'Data',
+    href: '/tools/json-to-env',
+    enabled: true
+  },
+  {
     id: 'csv-to-html',
     name: 'CSV to HTML',
     description: 'Generate HTML tables from CSV',
