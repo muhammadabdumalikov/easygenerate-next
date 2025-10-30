@@ -35,6 +35,7 @@ const nextConfig: NextConfig = {
         source: '/:path*',
         headers: [
           { key: 'Last-Modified', value: now },
+          { key: 'X-Robots-Tag', value: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' },
         ],
       },
     ];
