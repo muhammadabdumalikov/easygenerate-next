@@ -89,10 +89,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${plusJakartaSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Script id="ld-org" type="application/ld+json" strategy="afterInteractive">
+      <head>
+        <meta property="og:updated_time" content={new Date().toISOString()} />
+        <Script id="ld-org" type="application/ld+json" strategy="beforeInteractive">
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Organization",
@@ -106,7 +105,7 @@ export default function RootLayout({
             ]
           })}
         </Script>
-        <Script id="ld-website" type="application/ld+json" strategy="afterInteractive">
+        <Script id="ld-website" type="application/ld+json" strategy="beforeInteractive">
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebSite",
@@ -119,6 +118,10 @@ export default function RootLayout({
             }
           })}
         </Script>
+      </head>
+      <body
+        className={`${plusJakartaSans.variable} ${geistMono.variable} antialiased`}
+      >
         {children}
       </body>
     </html>
