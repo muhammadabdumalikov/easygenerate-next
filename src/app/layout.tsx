@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     images: ["/globe.svg"],
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/cloud-favicon.svg",
   },
   category: "utilities",
   robots: {
