@@ -21,7 +21,19 @@ export interface UpdateWishlistDto {
   producturl?: string;
 }
 
-const normalizeWishlistItem = (item: any): WishlistItem => {
+type ApiWishlistRecord = {
+  id?: string | number;
+  _id?: string | number;
+  ID?: string | number;
+  slug?: string | number;
+  title?: string;
+  imageurl?: string;
+  imageUrl?: string;
+  producturl?: string;
+  productUrl?: string;
+};
+
+const normalizeWishlistItem = (item: ApiWishlistRecord | null | undefined): WishlistItem => {
   const rawId =
     item?.id ??
     item?._id ??
@@ -115,10 +127,22 @@ export async function updateWishlistItem(
   updates: UpdateWishlistDto,
 ): Promise<WishlistItem | null> {
   try {
-    const payload = {
-      id,
-      ...updates,
-    };
+    const payload: Record<string, unknown> = { id };
+
+    if (updates.title !== undefined) {
+      payload.title = updates.title;
+    }
+
+    if (updates.imageurl !== undefined) {
+      payload.imageurl = updates.imageurl;
+      payload.imageUrl = updates.imageurl;
+    }
+
+    if (updates.producturl !== undefined) {
+      payload.producturl = updates.producturl;
+      payload.productUrl = updates.producturl;
+    }
+
     const response = await fetch(`${API_BASE_URL}/wishlist/update`, {
       method: "POST",
       headers: {
