@@ -1,6 +1,8 @@
 // Wishlist API Service
 const API_BASE_URL = "https://api.wetrippo.com/api";
 
+const OWNER_ID_KEY = "w-o-id";
+
 export interface WishlistItem {
   id: string;
   title: string;
@@ -19,6 +21,123 @@ export interface UpdateWishlistDto {
   title?: string;
   imageurl?: string;
   producturl?: string;
+}
+
+export interface AuthCredentials {
+  login: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  id: string;
+  login: string;
+}
+
+// Auth helpers
+export function getOwnerId(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(OWNER_ID_KEY);
+}
+
+export function setOwnerId(id: string): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(OWNER_ID_KEY, id);
+}
+
+export function clearOwnerId(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(OWNER_ID_KEY);
+}
+
+export function isAuthenticated(): boolean {
+  return getOwnerId() !== null;
+}
+
+// Authentication APIs
+export async function signUp(
+  credentials: AuthCredentials
+): Promise<AuthResponse | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/wishlist-auth/sign-up`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(credentials),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData?.message || `Signup failed: ${response.statusText}`
+      );
+    }
+
+    const data: AuthResponse = await response.json();
+    setOwnerId(data.id);
+    return data;
+  } catch (error) {
+    console.error("Error during signup:", error);
+    throw error;
+  }
+}
+
+export async function signIn(
+  credentials: AuthCredentials
+): Promise<AuthResponse | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/wishlist-auth/sign-in`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(credentials),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData?.message || `Sign in failed: ${response.statusText}`
+      );
+    }
+
+    const data: AuthResponse = await response.json();
+    setOwnerId(data.id);
+    return data;
+  } catch (error) {
+    console.error("Error during sign in:", error);
+    throw error;
+  }
+}
+
+export function signOut(): void {
+  clearOwnerId();
+}
+
+// Fetch public wishlist by owner ID (no authentication required)
+export async function fetchPublicWishlist(
+  ownerId: string
+): Promise<WishlistItem[]> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/wishlist/list`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ owner_id: ownerId }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch public wishlist: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const items = Array.isArray(data.data) ? data.data : [];
+    return items.map(normalizeWishlistItem);
+  } catch (error) {
+    console.error("Error fetching public wishlist:", error);
+    return [];
+  }
 }
 
 type ApiWishlistRecord = {
@@ -59,13 +178,18 @@ const normalizeWishlistItem = (item: ApiWishlistRecord | null | undefined): Wish
 
 // Fetch all wishlist items from API
 export async function fetchWishlistItems(): Promise<WishlistItem[]> {
+  const ownerId = getOwnerId();
+  if (!ownerId) {
+    return [];
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}/wishlist/list`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({}),
+      body: JSON.stringify({ owner_id: ownerId }),
     });
     if (!response.ok) {
       throw new Error(
@@ -91,11 +215,17 @@ export async function fetchWishlistItems(): Promise<WishlistItem[]> {
 export async function createWishlistItem(
   item: CreateWishlistDto,
 ): Promise<WishlistItem | null> {
+  const ownerId = getOwnerId();
+  if (!ownerId) {
+    throw new Error("Not authenticated");
+  }
+
   try {
     const payload = {
       ...item,
       imageUrl: item.imageurl,
       productUrl: item.producturl,
+      owner_id: ownerId,
     };
 
     const response = await fetch(`${API_BASE_URL}/wishlist/create`, {
@@ -126,8 +256,13 @@ export async function updateWishlistItem(
   id: string,
   updates: UpdateWishlistDto,
 ): Promise<WishlistItem | null> {
+  const ownerId = getOwnerId();
+  if (!ownerId) {
+    throw new Error("Not authenticated");
+  }
+
   try {
-    const payload: Record<string, unknown> = { id };
+    const payload: Record<string, unknown> = { id, owner_id: ownerId };
 
     if (updates.title !== undefined) {
       payload.title = updates.title;
@@ -168,13 +303,18 @@ export async function updateWishlistItem(
 
 // Delete a wishlist item
 export async function deleteWishlistItem(id: string): Promise<boolean> {
+  const ownerId = getOwnerId();
+  if (!ownerId) {
+    throw new Error("Not authenticated");
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}/wishlist/delete`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ id }),
+      body: JSON.stringify({ id, owner_id: ownerId }),
     });
 
     if (!response.ok) {
