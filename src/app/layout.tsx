@@ -124,6 +124,7 @@ export default function RootLayout({
       </head>
       <body
         className={`${plusJakartaSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
       >
         {/* Google Analytics */}
         <Script
