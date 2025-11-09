@@ -73,7 +73,7 @@ export default function AuthModal({
   onSignUp,
   currentLang,
 }: AuthModalProps) {
-  const [mode, setMode] = useState<'signin' | 'signup'>('signup');
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -135,16 +135,6 @@ export default function AuthModal({
         {/* Mode Tabs */}
         <div className="flex border-b border-gray-200 bg-gray-50">
           <button
-            onClick={() => setMode('signup')}
-            className={`flex-1 py-4 text-sm font-semibold transition-all ${
-              mode === 'signup'
-                ? 'text-indigo-600 border-b-2 border-indigo-600 bg-white'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            {t.signUp}
-          </button>
-          <button
             onClick={() => setMode('signin')}
             className={`flex-1 py-4 text-sm font-semibold transition-all ${
               mode === 'signin'
@@ -153,6 +143,16 @@ export default function AuthModal({
             }`}
           >
             {t.signIn}
+          </button>
+          <button
+            onClick={() => setMode('signup')}
+            className={`flex-1 py-4 text-sm font-semibold transition-all ${
+              mode === 'signup'
+                ? 'text-indigo-600 border-b-2 border-indigo-600 bg-white'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            {t.signUp}
           </button>
         </div>
 

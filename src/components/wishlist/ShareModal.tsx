@@ -49,10 +49,35 @@ export default function ShareModal({
   const t = translations[currentLang];
 
   useEffect(() => {
-    if (isOpen && typeof window !== 'undefined') {
-      const url = `${window.location.origin}/wishlist/${ownerId}`;
-      setShareUrl(url);
+    async function getShortUrl() {
+      if (isOpen && typeof window !== 'undefined') {
+        const url = `${window.location.origin}/wishlist/${ownerId}`;
+
+        try {
+          const response = await fetch('https://ulvis.net/api/v1/shorten', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              url,
+            }),
+          });
+          const data = await response.json();
+          if (data && data.shortUrl) {
+            setShareUrl(data.shortUrl);
+          } else {
+            setShareUrl(url);
+            console.warn('Shorten API did not return a shortUrl, using original URL.');
+          }
+        } catch (error) {
+          setShareUrl(url);
+          console.error('Failed to shorten URL:', error);
+        }
+      }
     }
+
+    getShortUrl();
   }, [isOpen, ownerId]);
 
   const handleCopy = async () => {
